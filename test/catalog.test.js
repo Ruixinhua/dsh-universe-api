@@ -9,7 +9,7 @@ import {
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join, relative } from 'node:path'
+import { join } from 'node:path'
 import test from 'node:test'
 
 import {
@@ -94,9 +94,8 @@ test('bundled loading reports bundled-public while an external catalog fully ove
 test('catalogPath must be absolute and an explicit failure never falls back', () => {
   const data = fixture()
   try {
-    const relativePath = relative(process.cwd(), data.catalogPath)
     assert.throws(
-      () => loadCatalogFromPath(relativePath, { aliasesPath: data.aliasesPath }),
+      () => loadCatalogFromPath(join('relative', 'catalog.json'), { aliasesPath: data.aliasesPath }),
       /catalogPath must be an absolute path/u,
     )
     const missing = join(data.directory, 'missing.json')
