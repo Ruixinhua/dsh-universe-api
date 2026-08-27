@@ -1,0 +1,75 @@
+{
+  "name": "dsh-universe-api",
+  "version": "0.1.0-rc.1",
+  "description": "Offline, deterministic public API discovery for DeepSeek Harness and DSH Desktop.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "src/",
+    "data/catalog.json",
+    "data/query_aliases.json",
+    "docs/",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh-CN.md",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test test/*.test.js",
+    "catalog:validate": "node scripts/run-python.mjs maintenance/validate_catalog.py",
+    "catalog:sync:dry-run": "node scripts/run-python.mjs maintenance/sync_catalog.py --dry-run",
+    "verify:package": "node scripts/verify-package.mjs",
+    "check": "npm run typecheck && npm test && npm run catalog:validate && npm run verify:package"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "api-catalog",
+    "public-apis",
+    "offline-first"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ruixinhua/dsh-universe-api.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Ruixinhua/dsh-universe-api/issues"
+  },
+  "homepage": "https://github.com/Ruixinhua/dsh-universe-api#readme",
+  "dependencies": {
+    "@deepseek-ai/schemastery": "3.18.1"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-tools": ">=0.1.1-rc.2 <0.2.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-llm": "0.1.1-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.1.1-rc.2",
+    "@deepseek-ai/dsh-tools": "0.1.1-rc.2",
+    "@types/node": "22.20.0",
+    "typescript": "6.0.3"
+  }
+}

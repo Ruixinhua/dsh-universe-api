@@ -1,0 +1,162 @@
+{
+  "aliases": {
+    "books": [
+      "isbn",
+      "literature",
+      "书籍",
+      "图书"
+    ],
+    "cryptocurrency": [
+      "crypto",
+      "digital assets",
+      "加密货币",
+      "数字货币"
+    ],
+    "currency": [
+      "exchange rate",
+      "forex",
+      "fx",
+      "外汇",
+      "汇率",
+      "货币转换"
+    ],
+    "email validation": [
+      "email verification",
+      "mailbox validation",
+      "邮件验证",
+      "邮箱验证"
+    ],
+    "food": [
+      "nutrition",
+      "recipes",
+      "菜谱",
+      "营养",
+      "食品"
+    ],
+    "forecast": [
+      "weather forecast",
+      "天气预报",
+      "预报"
+    ],
+    "geolocation": [
+      "geocoding",
+      "location",
+      "reverse geocoding",
+      "地址定位",
+      "地理位置",
+      "经纬度"
+    ],
+    "government": [
+      "open data",
+      "public data",
+      "开放数据",
+      "政府数据"
+    ],
+    "health": [
+      "healthcare",
+      "medical",
+      "健康",
+      "医疗"
+    ],
+    "historical data": [
+      "historical",
+      "history",
+      "time series",
+      "timeseries",
+      "历史",
+      "历史数据",
+      "历史行情",
+      "时间序列"
+    ],
+    "image processing": [
+      "computer vision",
+      "image manipulation",
+      "图像处理",
+      "图片处理",
+      "计算机视觉"
+    ],
+    "machine learning": [
+      "ai",
+      "artificial intelligence",
+      "ml",
+      "人工智能",
+      "机器学习"
+    ],
+    "maps": [
+      "mapping",
+      "地图",
+      "路线规划"
+    ],
+    "market data": [
+      "market quotes",
+      "市场行情",
+      "行情"
+    ],
+    "movies": [
+      "cinema",
+      "film",
+      "影视",
+      "电影"
+    ],
+    "music": [
+      "audio",
+      "songs",
+      "歌曲",
+      "音乐"
+    ],
+    "natural language": [
+      "nlp",
+      "text analysis",
+      "文本分析",
+      "自然语言"
+    ],
+    "news": [
+      "articles",
+      "headlines",
+      "新闻",
+      "资讯"
+    ],
+    "phone validation": [
+      "number validation",
+      "phone verification",
+      "手机号验证",
+      "电话号码验证"
+    ],
+    "shipping": [
+      "logistics",
+      "tracking",
+      "包裹追踪",
+      "快递",
+      "物流"
+    ],
+    "sports": [
+      "fixtures",
+      "scores",
+      "体育",
+      "比赛结果",
+      "赛程"
+    ],
+    "stocks": [
+      "equities",
+      "equity market",
+      "stock",
+      "stock market",
+      "股价",
+      "股票",
+      "证券行情"
+    ],
+    "translation": [
+      "language translation",
+      "translate",
+      "翻译",
+      "语言翻译"
+    ],
+    "weather": [
+      "climate",
+      "meteorology",
+      "天气",
+      "气象"
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,11 @@
+{
+  "policy_version": 1,
+  "public_only": true,
+  "source": {
+    "license": "MIT",
+    "license_url": "https://github.com/public-apis/public-apis/blob/master/LICENSE",
+    "raw_url_template": "https://raw.githubusercontent.com/public-apis/public-apis/{revision}/README.md",
+    "repository": "https://github.com/public-apis/public-apis",
+    "source_id": "public-apis-readme"
+  }
+}
