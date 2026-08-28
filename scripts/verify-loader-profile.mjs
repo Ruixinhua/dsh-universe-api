@@ -102,7 +102,10 @@ try {
   })
   runNpm([
     'install',
-    '--offline',
+    // A fresh `npm ci` cache contains package tarballs but not every registry
+    // packument the peer resolver needs. Prefer that cache while allowing the
+    // same metadata lookup installation already requires.
+    '--prefer-offline',
     '--ignore-scripts',
     '--no-audit',
     '--no-fund',

@@ -70,7 +70,7 @@ npm run catalog:validate
 npm run verify:package
 ```
 
-`verify:loader` creates the final npm tarball, installs it offline into a temporary DSH profile, activates it through the published DSH profile/Loader path, and executes `universe_api_search`. This catches missing packed files, broken bundle patches, profile-local resolution failures, and activation errors that a direct `apply(ctx)` test cannot see.
+`verify:loader` creates the final npm tarball, installs it into a temporary DSH profile, activates it through the published DSH profile/Loader path, and executes `universe_api_search`. Installation prefers npm's cache but may fetch missing registry metadata; the activated tool itself remains offline. This catches missing packed files, broken bundle patches, profile-local resolution failures, and activation errors that a direct `apply(ctx)` test cannot see.
 
 Before handing off a change, run the same aggregate gate used by CI and inspect npm's package file list:
 
