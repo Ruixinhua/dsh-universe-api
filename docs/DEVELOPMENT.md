@@ -65,9 +65,12 @@ Run the focused checks while developing:
 ```bash
 npm run typecheck
 npm test
+npm run verify:loader
 npm run catalog:validate
 npm run verify:package
 ```
+
+`verify:loader` creates the final npm tarball, installs it offline into a temporary DSH profile, activates it through the published DSH profile/Loader path, and executes `universe_api_search`. This catches missing packed files, broken bundle patches, profile-local resolution failures, and activation errors that a direct `apply(ctx)` test cannot see.
 
 Before handing off a change, run the same aggregate gate used by CI and inspect npm's package file list:
 
@@ -97,8 +100,8 @@ For a release candidate:
 
 1. Finish and review the explicit catalog update, if one is intended.
 2. Set the package and changelog version to the same SemVer value.
-3. Run `npm ci`, `npm run check`, and `npm pack --dry-run` from a clean checkout.
-4. Push the matching tag, such as `v0.1.0-rc.1`.
+3. Run `npm ci`, `npm run verify:loader`, `npm run check`, and `npm pack --dry-run` from a clean checkout.
+4. Push the matching tag, such as `v0.1.0-rc.2`.
 5. Download the resulting release assets and verify the checksum.
 6. Install that tarball in DSH Desktop and complete the manual checklist.
 7. Promote only after the release artifact passes; do not substitute local-checkout results.

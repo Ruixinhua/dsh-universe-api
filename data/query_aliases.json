@@ -122,8 +122,9 @@
       "手机号验证",
       "电话号码验证"
     ],
-    "shipping": [
+    "shipment parcel": [
       "logistics",
+      "shipping",
       "tracking",
       "包裹追踪",
       "快递",

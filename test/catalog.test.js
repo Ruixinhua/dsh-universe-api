@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import assert from 'node:assert/strict'
+import { execFileSync, spawnSync } from 'node:child_process'
 import {
   mkdirSync,
   mkdtempSync,
@@ -148,6 +149,46 @@ test('sidecar must be a regular UTF-8 JSON file no larger than 16 MiB', () => {
       () => loadCatalogFromPath(invalidUtf8, { aliasesPath: data.aliasesPath }),
       /not valid UTF-8/u,
     )
+  } finally {
+    data.close()
+  }
+})
+
+test('Unix special-file sidecars fail closed without blocking startup', {
+  skip: process.platform === 'win32',
+}, () => {
+  const data = fixture()
+  try {
+    const fifoPath = join(data.directory, 'catalog.fifo')
+    execFileSync('mkfifo', [fifoPath])
+    const moduleUrl = new URL('../src/catalog.js', import.meta.url).href
+    const result = spawnSync(process.execPath, [
+      '--input-type=module',
+      '-e',
+      [
+        'const { loadCatalogFromPath } = await import(process.argv[1])',
+        'try {',
+        '  loadCatalogFromPath(process.argv[2])',
+        "  process.stderr.write('special-file sidecar unexpectedly loaded')",
+        '  process.exitCode = 2',
+        '} catch (error) {',
+        '  process.stdout.write(JSON.stringify({ name: error.name, message: error.message }))',
+        '}',
+      ].join('\n'),
+      moduleUrl,
+      fifoPath,
+    ], {
+      encoding: 'utf8',
+      killSignal: 'SIGKILL',
+      timeout: 750,
+    })
+
+    assert.equal(result.error, undefined, 'special-file validation blocked until timeout')
+    assert.equal(result.status, 0, result.stderr)
+    assert.deepEqual(JSON.parse(result.stdout), {
+      name: 'CatalogError',
+      message: 'External catalog must be a regular file',
+    })
   } finally {
     data.close()
   }

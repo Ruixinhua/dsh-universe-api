@@ -1,6 +1,6 @@
 {
   "name": "dsh-universe-api",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0-rc.2",
   "description": "Offline, deterministic public API discovery for DeepSeek Harness and DSH Desktop.",
   "type": "module",
   "main": "index.js",
@@ -35,10 +35,11 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "node --test test/*.test.js",
+    "verify:loader": "node --expose-internals scripts/verify-loader-profile.mjs",
     "catalog:validate": "node scripts/run-python.mjs maintenance/validate_catalog.py",
     "catalog:sync:dry-run": "node scripts/run-python.mjs maintenance/sync_catalog.py --dry-run",
     "verify:package": "node scripts/verify-package.mjs",
-    "check": "npm run typecheck && npm test && npm run catalog:validate && npm run verify:package"
+    "check": "npm run typecheck && npm test && npm run verify:loader && npm run catalog:validate && npm run verify:package"
   },
   "keywords": [
     "deepseek-harness",
@@ -66,6 +67,7 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-app-boot": "0.1.1-rc.2",
     "@deepseek-ai/dsh-llm": "0.1.1-rc.2",
     "@deepseek-ai/dsh-system-prompt": "0.1.1-rc.2",
     "@deepseek-ai/dsh-tools": "0.1.1-rc.2",

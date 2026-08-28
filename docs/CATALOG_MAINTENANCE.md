@@ -4,7 +4,7 @@ The bundled catalog is updated only by an explicit maintainer action. Normal plu
 
 ## Pinned source
 
-The `0.1.0-rc.1` snapshot uses [public-apis/public-apis](https://github.com/public-apis/public-apis) commit:
+The current bundled snapshot uses [public-apis/public-apis](https://github.com/public-apis/public-apis) commit:
 
 ```text
 988c57be4616cc9507fd3e8c34adedba5387f079

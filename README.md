@@ -6,7 +6,7 @@
 
 > This is a discovery tool, not an API client. It never calls a candidate API, accepts no API keys, and performs no runtime network requests. Verify pricing, availability, authentication, and terms in the provider's official documentation before making an important choice.
 
-Version `0.1.0-rc.1` is a release candidate intended for hands-on testing.
+Version `0.1.0-rc.2` is a release candidate intended for hands-on testing.
 
 ## What it provides
 
@@ -26,6 +26,19 @@ The plugin does not silently relax filters when there are no matches. In particu
 
 Run all installation commands below in the **DSH Terminal opened from DSH Desktop**, not an unrelated system shell. Add `--profile <name>` after `plugin` and after `dsh` if you manage a non-default profile.
 
+### Compatibility baseline
+
+| Component | Version | Coverage for `0.1.0-rc.2` |
+| --- | --- | --- |
+| `dsh-universe-api` | `0.1.0-rc.2` | Current release candidate |
+| DSH Desktop | `2.0.3` | Contract target; hands-on Desktop acceptance is still pending |
+| DSH runtime packages | `0.1.1-rc.2` | Native tool registration, execution, and packed profile Loader tests |
+| Cordis | `4.0.1` | Automated tests |
+| Node.js | `22.19.0`, `24.x` | CI; Desktop users use its bundled runtime |
+| Operating systems | Ubuntu, Windows, macOS | Ubuntu full gate; Windows/macOS runtime, Loader, and package smoke |
+
+The release candidate still requires hands-on verification of the packaged Desktop profile and UI lifecycle. Follow the [manual test checklist](docs/MANUAL_TESTING.md) before promoting it to a stable release.
+
 ## Install
 
 Choose one source and pin it when possible.
@@ -39,7 +52,7 @@ dsh plugin add /absolute/path/to/dsh-universe-api
 ### GitHub tag
 
 ```bash
-dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.1
+dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.2
 ```
 
 The package is pure ESM and has no `build` or `prepare` install hook, so a GitHub installation does not need pnpm `allowBuilds` permission.
@@ -49,11 +62,25 @@ The package is pure ESM and has no `build` or `prepare` install hook, so a GitHu
 Download the `.tgz` and matching `.sha256` assets from the GitHub release, place them in the same directory, and verify the checksum:
 
 ```bash
-sha256sum --check dsh-universe-api-0.1.0-rc.1.tgz.sha256
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.1.tgz
+sha256sum --check dsh-universe-api-0.1.0-rc.2.tgz.sha256
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.2.tgz
 ```
 
-On macOS, use `shasum -a 256 -c dsh-universe-api-0.1.0-rc.1.tgz.sha256` if `sha256sum` is unavailable.
+On macOS, use `shasum -a 256 -c dsh-universe-api-0.1.0-rc.2.tgz.sha256` if `sha256sum` is unavailable.
+
+On Windows, first change to the directory containing both downloaded files, or replace `$archive` and `$checksum` below with absolute paths. Verify the archive and install that exact verified file in PowerShell:
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$archive = '.\dsh-universe-api-0.1.0-rc.2.tgz'
+$checksum = '.\dsh-universe-api-0.1.0-rc.2.tgz.sha256'
+$archivePath = (Resolve-Path -LiteralPath $archive).Path
+$expected = ((Get-Content -LiteralPath $checksum -Raw).Trim() -split '\s+')[0]
+$actual = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
+if ($expected -notmatch '^[0-9a-fA-F]{64}$') { throw "Invalid SHA-256 file: $checksum" }
+if ($actual -ine $expected) { throw "SHA-256 mismatch for $archivePath" }
+dsh plugin add $archivePath
+```
 
 ### Confirm activation
 
@@ -61,7 +88,7 @@ On macOS, use `shasum -a 256 -c dsh-universe-api-0.1.0-rc.1.tgz.sha256` if `sha2
 dsh --dump-config
 ```
 
-Confirm that the output contains a `dsh-universe-api` layer and plugin row. Fully quit and restart DSH Desktop after installing or changing configuration; opening a new chat alone is not sufficient.
+Confirm that the output contains a `dsh-universe-api` layer and plugin row. Use **Quit** from the DSH Desktop tray, then launch Desktop again so the new bundle enters the Loader composition. Closing the window only hides Desktop, and opening a new chat alone is not sufficient.
 
 ## Use
 
@@ -110,7 +137,28 @@ The file must:
 
 Use `dsh --dump-config` with the same profile selection to confirm that this row is the final value for `dsh-universe-api`. An external catalog fully replaces the bundled public snapshot. It is never merged with the public data. An invalid, missing, relative, oversized, or unreadable file prevents the plugin from loading; there is no silent fallback. Results identify the source as `external` without exposing the local path. Restart DSH Desktop after changing the file or its path.
 
+Complete one healthy start before deliberately testing an invalid catalog and note its time. If the invalid catalog opens Recovery, open **Rollback**, select the exact checkpoint slot whose timestamp matches that healthy start, preview and confirm it, then restart. If no usable checkpoint exists, open **Diagnostics → Open profile patch** and restore the known-good plugin row manually. If the tray remains available, the restart menu beside Desktop settings can choose **Restart in Recovery Mode**. Complete a healthy restart before trying the next failure case. The [manual test checklist](docs/MANUAL_TESTING.md) gives the full sequence.
+
 See [Private catalog format](docs/PRIVATE_CATALOG.md) for the canonical-v1 shape and validation rules.
+
+## Update a pinned installation
+
+Choose one fixed source and update the same profile where the plugin is already installed:
+
+- **Release tarball:** download the new `.tgz` and `.sha256`, verify them using the platform-specific instructions above, then install that exact verified tarball. On Windows, repeat the PowerShell block with the new filenames; it ends with `dsh plugin add $archivePath`. On Linux or macOS run:
+
+```bash
+dsh plugin add /absolute/path/to/dsh-universe-api-NEW_VERSION.tgz
+```
+
+- **GitHub tag:** install the exact new tag directly. This is a separate source; the Release tarball checksum does not authenticate the Git checkout fetched by pnpm.
+
+  ```bash
+  # Replace NEW_VERSION with the exact release version, including any prerelease suffix.
+  dsh plugin add github:Ruixinhua/dsh-universe-api#vNEW_VERSION
+  ```
+
+`dsh plugin add` replaces the profile's installed dependency specification for the package. A bare `dsh plugin update` does not choose a new fixed Git tag or tarball path for you. Run `dsh --dump-config`, confirm the `dsh-universe-api` layer still appears exactly once, then use tray **Quit** and launch Desktop again. Repeat the core search prompt to verify the upgraded version.
 
 ## Remove
 
@@ -118,7 +166,7 @@ See [Private catalog format](docs/PRIVATE_CATALOG.md) for the canonical-v1 shape
 dsh plugin remove dsh-universe-api
 ```
 
-Fully quit and restart DSH Desktop, then confirm with `dsh --dump-config` that the layer is gone.
+Use tray **Quit** and launch DSH Desktop again, then confirm with `dsh --dump-config` that the layer is gone.
 
 ## Test a release candidate
 
@@ -128,6 +176,7 @@ The maintainer gates are:
 npm ci
 npm run typecheck
 npm test
+npm run verify:loader
 npm run check
 npm pack --dry-run
 ```

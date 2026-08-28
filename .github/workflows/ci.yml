@@ -81,5 +81,8 @@ jobs:
         env:
           PYTHON: ${{ matrix.python }}
 
+      - name: Run packed Loader profile smoke
+        run: npm run verify:loader
+
       - name: Inspect package contents
         run: npm pack --dry-run

@@ -25,6 +25,7 @@ No build step is required. Do not add a `prepare` hook: GitHub installs must rem
 npm ci
 npm run typecheck
 npm test
+npm run verify:loader
 npm run check
 npm pack --dry-run
 ```

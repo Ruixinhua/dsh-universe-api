@@ -836,12 +836,13 @@ export function searchCatalog(loaded, args = {}) {
     );
   }
   const categoryFilters = compileCategoryFilters(filters.categories, loaded.aliases);
+  const hasNonBlankQuery = filters.query.trim().length > 0;
   const ranked = [];
 
   for (const row of loaded.index.rows) {
     if (!matchesFilters(row, filters, categoryFilters)) continue;
     const lexical = lexicalScore(row, expanded, loaded.index);
-    if (expanded.terms.length && lexical.score <= 0) continue;
+    if (hasNonBlankQuery && lexical.score <= 0) continue;
 
     const freshness = freshnessInfo(row.record, loaded.index.referenceTime);
     const activeAdjustment = canonicalStatus(row.record.status) === 'active' ? 0.04 : 0;

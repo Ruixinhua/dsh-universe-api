@@ -1,4 +1,4 @@
-import { closeSync, fstatSync, openSync, readSync } from 'node:fs';
+import { closeSync, constants, fstatSync, openSync, readSync, statSync } from 'node:fs';
 import { isAbsolute, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -748,15 +748,28 @@ function parseJson(bytes, label) {
 
 /** @param {string} path @param {string} label @returns {any} */
 function readJsonFile(path, label) {
+  let pathStats;
+  try {
+    pathStats = statSync(path);
+  } catch (error) {
+    throw new CatalogError(`${label} cannot be read`, { cause: error });
+  }
+  if (!pathStats.isFile()) throw new CatalogError(`${label} must be a regular file`);
+
   let descriptor;
   try {
-    descriptor = openSync(path, 'r');
+    const flags = constants.O_RDONLY
+      | (typeof constants.O_NONBLOCK === 'number' ? constants.O_NONBLOCK : 0);
+    descriptor = openSync(path, flags);
   } catch (error) {
     throw new CatalogError(`${label} cannot be read`, { cause: error });
   }
   try {
     const stats = fstatSync(descriptor);
     if (!stats.isFile()) throw new CatalogError(`${label} must be a regular file`);
+    if (stats.dev !== pathStats.dev || stats.ino !== pathStats.ino) {
+      throw new CatalogError(`${label} changed while it was being opened`);
+    }
     if (stats.size > MAX_CATALOG_BYTES) {
       throw new CatalogError(`${label} exceeds the 16 MiB size limit`);
     }

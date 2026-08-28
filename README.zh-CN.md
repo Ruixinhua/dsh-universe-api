@@ -6,7 +6,7 @@
 
 > 这是 API 发现工具，不是 API 客户端。它不会调用候选 API，不接收 API key，运行时也不会发起网络请求。重要选型前，请到供应商官方文档再次核对价格、可用性、认证方式和使用条款。
 
-`0.1.0-rc.1` 是供实际测试的候选版本。
+`0.1.0-rc.2` 是供实际测试的候选版本。
 
 ## 能力
 
@@ -24,6 +24,17 @@
 - DSH 或 DSH Desktop，并能打开 DSH Terminal。
 - 从源码开发需要 Node.js `^22.19.0 || >=24.0.0`。普通 Desktop 用户通常直接使用 Desktop 自带运行时。
 
+兼容性基线如下。`0.1.0-rc.2` 的真实 Desktop 验收仍需按本文末尾的人工清单完成，表中的自动化覆盖不代表已经替代 Desktop 人工测试。
+
+| 组件 | 版本 | 覆盖方式 |
+| --- | --- | --- |
+| `dsh-universe-api` | `0.1.0-rc.2` | 当前候选版本 |
+| DSH Desktop | `2.0.3` | 契约目标；真实 Desktop 人工验收待完成 |
+| DSH runtime packages | `0.1.1-rc.2` | 原生工具注册、执行管线与 Loader 测试 |
+| Cordis | `4.0.1` | 自动化测试 |
+| Node.js | `22.19.0`、`24.x` | CI；Desktop 用户使用其内置运行时 |
+| 操作系统 | Ubuntu、Windows、macOS | Ubuntu 完整门禁；Windows/macOS 运行时、Loader 与打包 smoke |
+
 以下安装命令应在 **DSH Desktop 中打开的 DSH Terminal** 执行，不要在无关的系统终端中执行。如果使用非默认 profile，请分别在 `plugin` 和 `dsh` 命令后添加 `--profile <名称>`。
 
 ## 安装
@@ -39,7 +50,7 @@ dsh plugin add /absolute/path/to/dsh-universe-api
 ### GitHub tag
 
 ```bash
-dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.1
+dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.2
 ```
 
 本包是无需构建的纯 ESM，并且没有 `build` 或 `prepare` 安装钩子，所以从 GitHub 安装不需要配置 pnpm `allowBuilds`。
@@ -49,11 +60,25 @@ dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.1
 从 GitHub Release 下载 `.tgz` 和对应的 `.sha256`，放在同一目录后校验：
 
 ```bash
-sha256sum --check dsh-universe-api-0.1.0-rc.1.tgz.sha256
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.1.tgz
+sha256sum --check dsh-universe-api-0.1.0-rc.2.tgz.sha256
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.2.tgz
 ```
 
-macOS 没有 `sha256sum` 时，可执行 `shasum -a 256 -c dsh-universe-api-0.1.0-rc.1.tgz.sha256`。
+macOS 没有 `sha256sum` 时，可执行 `shasum -a 256 -c dsh-universe-api-0.1.0-rc.2.tgz.sha256`。
+
+Windows 用户应先切换到两个下载文件所在目录，或把下面的 `$archive` 和 `$checksum` 替换为绝对路径。以下 PowerShell 会先验证归档，再安装刚刚验证的同一文件：
+
+```powershell
+$ErrorActionPreference = 'Stop'
+$archive = '.\dsh-universe-api-0.1.0-rc.2.tgz'
+$checksum = '.\dsh-universe-api-0.1.0-rc.2.tgz.sha256'
+$archivePath = (Resolve-Path -LiteralPath $archive).Path
+$expected = ((Get-Content -LiteralPath $checksum -Raw).Trim() -split '\s+')[0]
+$actual = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
+if ($expected -notmatch '^[0-9a-fA-F]{64}$') { throw "Invalid SHA-256 file: $checksum" }
+if ($actual -ine $expected) { throw "SHA-256 mismatch for $archivePath" }
+dsh plugin add $archivePath
+```
 
 ### 确认启用
 
@@ -61,7 +86,26 @@ macOS 没有 `sha256sum` 时，可执行 `shasum -a 256 -c dsh-universe-api-0.1.
 dsh --dump-config
 ```
 
-确认输出包含 `dsh-universe-api` layer 和插件行。安装或修改配置后必须完整退出并重启 DSH Desktop；只打开一个新对话不够。
+确认输出包含 `dsh-universe-api` layer 和插件行。安装或修改配置后必须从托盘选择 **Quit/退出**，再重新启动 DSH Desktop；关闭窗口或只打开一个新对话都不够。
+
+## 升级固定版本
+
+本项目推荐固定 GitHub tag 或 Release tarball。选择一种固定来源，在已经安装插件的同一 profile 中升级：
+
+- **Release tarball：**下载新版本的 `.tgz` 与 `.sha256`，按上面的平台说明完成校验，然后安装刚刚校验的同一 tarball。Windows 应把新文件名代入 PowerShell 代码后重新执行；该代码以 `dsh plugin add $archivePath` 结束。Linux 或 macOS 执行：
+
+```bash
+dsh plugin add /absolute/path/to/dsh-universe-api-NEW_VERSION.tgz
+```
+
+- **GitHub tag：**直接安装准确的新 tag。这是另一种来源；Release tarball 的 SHA-256 不能认证 pnpm 随后获取的 Git checkout。
+
+  ```bash
+  # 将 NEW_VERSION 替换为完整版本号，包括预发布后缀。
+  dsh plugin add github:Ruixinhua/dsh-universe-api#vNEW_VERSION
+  ```
+
+`dsh plugin add` 会更新 profile 中已安装的直接依赖规范，无需先删除插件。随后执行 `dsh --dump-config`，确认配置中仍只有一个 `dsh-universe-api` bundle layer，并保留预期的 `catalogPath` 配置（如有），再从托盘选择 **Quit/退出** 并重新启动。`dsh plugin update` 适合按可变 registry 范围安装的依赖；它不会替你选择另一个固定 tag 或 tarball，因此不作为本项目固定 Release 的升级步骤。
 
 ## 使用
 
@@ -110,6 +154,8 @@ Use universe_api_search to find 3 weather APIs that require no API key and have 
 
 使用相同 profile 选择执行 `dsh --dump-config`，确认这一行是 `dsh-universe-api` 的最终配置。外部目录会完整替换内置公共快照，二者不会合并。路径相对、文件不存在、超限、不可读或校验失败时，插件会加载失败，绝不静默回退。工具结果只标记来源为 `external`，不会泄露本机路径。修改文件或路径后需要重启 DSH Desktop。
 
+测试错误目录前，先完成一次健康启动并记下时间。若错误目录导致 Desktop 进入 Recovery，打开 **回滚/Rollback**，选择时间戳与该次健康启动对应的准确 checkpoint 槽位，预览并确认后重启。若没有可用槽位，从 **诊断/Diagnostics → 打开 Profile Patch/Open profile patch** 手动恢复已知健康的插件行。若仍能进入托盘，也可从设置旁的重启菜单选择 **重启到恢复模式/Restart in Recovery Mode**。确认健康启动后，再测试下一个错误用例。完整步骤见[人工测试清单](docs/MANUAL_TESTING.md)。
+
 格式和校验规则见[私有目录格式](docs/PRIVATE_CATALOG.md)。
 
 ## 卸载
@@ -118,7 +164,7 @@ Use universe_api_search to find 3 weather APIs that require no API key and have 
 dsh plugin remove dsh-universe-api
 ```
 
-完整退出并重启 DSH Desktop，然后用 `dsh --dump-config` 确认该 layer 已消失。
+从托盘选择 **Quit/退出**，重新启动 DSH Desktop，然后用 `dsh --dump-config` 确认该 layer 已消失。
 
 ## 测试候选版本
 
@@ -128,6 +174,7 @@ dsh plugin remove dsh-universe-api
 npm ci
 npm run typecheck
 npm test
+npm run verify:loader
 npm run check
 npm pack --dry-run
 ```

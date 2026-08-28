@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
-import { loadCatalogFromPath } from '../src/catalog.js'
+import { loadBundledCatalog, loadCatalogFromPath } from '../src/catalog.js'
 import { renderSearchResult } from '../src/render.js'
 import { SearchArgumentError, normalizeText, searchCatalog, tokenize } from '../src/search.js'
 import {
@@ -78,6 +78,49 @@ test('English and Chinese stock-history golden queries preserve full concept cov
   } finally {
     data.close()
   }
+})
+
+test('shipping aliases discover logistics APIs without promoting generic tracking results', () => {
+  const loaded = loadBundledCatalog()
+  const logisticsIds = new Set([
+    'cws-correios-com-br:correios',
+    'developer-postnord-com:postnord',
+    'developers-aftership-com:aftership',
+    'ups-com:ups',
+    'whereparcel-com:whereparcel',
+  ])
+
+  for (const query of ['shipping', 'logistics', 'tracking', '包裹追踪', '快递', '物流']) {
+    const result = searchCatalog(loaded, { query, limit: 20 })
+    assert.deepEqual(searchCatalog(loaded, { query, limit: 20 }), result)
+    assert.ok(result.totalMatches > 0, `${query} returned no matches`)
+    const ids = result.results.map((item) => item.id)
+    assert.ok(ids.some((id) => logisticsIds.has(id)), `${query} found no logistics API`)
+    if (query !== 'tracking') {
+      assert.ok(logisticsIds.has(ids[0]), `${query} promoted a generic tracking result`)
+      assert.ok(ids.slice(0, 5).every((id) => logisticsIds.has(id)))
+    }
+  }
+
+  const trackingOnly = searchCatalog(loaded, {
+    query: '物流',
+    categories: ['Tracking'],
+    limit: 20,
+  })
+  const wrongCategory = searchCatalog(loaded, {
+    query: '物流',
+    categories: ['Finance'],
+    limit: 20,
+  })
+  const categoryOr = searchCatalog(loaded, {
+    query: '物流',
+    categories: ['Tracking', 'Finance'],
+    limit: 20,
+  })
+  assert.equal(trackingOnly.totalMatches, 5)
+  assert.ok(trackingOnly.results.every((item) => logisticsIds.has(item.id)))
+  assert.equal(wrongCategory.totalMatches, 0)
+  assert.deepEqual(categoryOr.results, trackingOnly.results)
 })
 
 test('short domain tokens are mandatory capability constraints', () => {
@@ -171,6 +214,32 @@ test('zero matches never relax filters, including the APILayer tier', () => {
     assert.equal(result.filters.sourceTier, 'apilayer')
     assert.equal(result.filters.auth, 'none')
     assert.match(renderSearchResult(result), /No filter was relaxed\./u)
+  } finally {
+    data.close()
+  }
+})
+
+test('non-blank queries with no searchable terms remain zero-result queries', () => {
+  const data = fixture()
+  try {
+    const loaded = data.load()
+    for (const query of ['🚀✨', '!!!', '。！？', 'please find me an API', '\u200b']) {
+      const result = searchCatalog(loaded, { query, https: 'yes', limit: 20 })
+      assert.equal(result.query.original, query)
+      assert.deepEqual(result.query.expanded, [])
+      assert.equal(result.filters.https, 'yes')
+      assert.equal(result.totalMatches, 0)
+      assert.equal(result.truncated, false)
+      assert.deepEqual(result.results, [])
+    }
+
+    const whitespaceBrowse = searchCatalog(loaded, { query: '   ', https: 'yes', limit: 20 })
+    const omittedBrowse = searchCatalog(loaded, { https: 'yes', limit: 20 })
+    assert.equal(whitespaceBrowse.totalMatches, omittedBrowse.totalMatches)
+    assert.deepEqual(
+      whitespaceBrowse.results.map((item) => item.id),
+      omittedBrowse.results.map((item) => item.id),
+    )
   } finally {
     data.close()
   }
