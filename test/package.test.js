@@ -27,6 +27,9 @@ test('package declares an installable no-build DSH bundle', async () => {
     packageJson.peerDependencies?.['@deepseek-ai/dsh-tools'],
     '>=0.1.1-rc.2 <0.2.0',
   )
+  assert.equal(packageJson.dependencies?.['@deepseek-ai/schemastery'], undefined)
+  assert.equal(packageJson.peerDependencies?.['@deepseek-ai/schemastery'], '^3.18.1')
+  assert.equal(packageJson.devDependencies?.['@deepseek-ai/schemastery'], '3.18.1')
   assert.equal(packageJson.devDependencies?.['@deepseek-ai/dsh-app-boot'], '0.1.1-rc.2')
 })
 

@@ -116,11 +116,18 @@ try {
   const installedManifest = JSON.parse(
     readFileSync(join(installedPackageDir, 'package.json'), 'utf8'),
   )
+  const installedSchemastery = JSON.parse(
+    readFileSync(join(profileDir, 'node_modules', '@deepseek-ai', 'schemastery', 'package.json'), 'utf8'),
+  )
   assert.equal(lstatSync(installedPackageDir).isSymbolicLink(), false)
   assert.equal(installedManifest.name, PACKAGE_NAME)
   assert.equal(installedManifest.version, projectManifest.version)
   assert.equal(installedManifest.dsh?.bundle?.patch, './cordis.patch.yml')
   assert.equal(installedManifest.scripts?.prepare, undefined)
+  assert.equal(installedManifest.dependencies?.['@deepseek-ai/schemastery'], undefined)
+  assert.equal(installedManifest.peerDependencies?.['@deepseek-ai/schemastery'], '^3.18.1')
+  assert.equal(installedSchemastery.version, projectManifest.devDependencies['@deepseek-ai/schemastery'])
+  runNpm(['ls', '--all', '--json'], profileDir)
 
   const profile = loadProfile(BIN_NAME, PROFILE_NAME, installAnchor, homeDir)
   assert.equal(profile.layers.length, 1)
