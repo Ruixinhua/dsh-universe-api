@@ -15,7 +15,12 @@ import { fileURLToPath } from 'node:url'
 import {
   assertLockfileMatchesManifest,
   assertProjectManifest,
+  releaseChannelForVersion,
 } from './lib/release-gates.mjs'
+import {
+  assertExpectedPackageFiles,
+  auditInstalledPackage,
+} from './lib/package-audit.mjs'
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url))
 const args = process.argv.slice(2)
@@ -33,36 +38,15 @@ for (let index = 0; index < args.length; index += 1) {
     throw new Error(`unknown verify-package argument: ${String(argument)}`)
   }
 }
-if (channel !== 'next' && channel !== 'latest') {
-  throw new Error('verify-package requires --channel next|latest')
+if (channel !== 'auto' && channel !== 'next' && channel !== 'latest') {
+  throw new Error('verify-package requires --channel auto|next|latest')
 }
 if (requestedArtifactDir === '') throw new Error('--artifact-dir requires a path')
 
 const packageJson = JSON.parse(readFileSync(join(projectRoot, 'package.json'), 'utf8'))
 const packageLock = JSON.parse(readFileSync(join(projectRoot, 'package-lock.json'), 'utf8'))
 assertLockfileMatchesManifest(packageLock, packageJson)
-
-const expectedFiles = [
-  'CHANGELOG.md',
-  'CONTRIBUTING.md',
-  'LICENSE',
-  'README.md',
-  'README.zh-CN.md',
-  'SECURITY.md',
-  'THIRD_PARTY_NOTICES.md',
-  'cordis.patch.yml',
-  'data/catalog.json',
-  'data/query_aliases.json',
-  'docs/CATALOG_MAINTENANCE.md',
-  'docs/DEVELOPMENT.md',
-  'docs/MANUAL_TESTING.md',
-  'docs/PRIVATE_CATALOG.md',
-  'index.js',
-  'package.json',
-  'src/catalog.js',
-  'src/render.js',
-  'src/search.js',
-]
+const releaseChannel = channel === 'auto' ? releaseChannelForVersion(packageJson.version) : channel
 
 const workRoot = mkdtempSync(join(tmpdir(), 'dsh-universe-package-audit-'))
 const artifactDir = requestedArtifactDir === undefined
@@ -94,12 +78,8 @@ try {
   assert.equal(entry.filename, `${packageJson.name}-${packageJson.version}.tgz`)
 
   const files = new Set(entry.files.map(file => file.path))
-  assertProjectManifest(packageJson, { channel, packedFiles: files })
-  assert.deepEqual(
-    [...files].sort(),
-    [...expectedFiles].sort(),
-    'packed file list changed; review and update the explicit release allowlist',
-  )
+  assertProjectManifest(packageJson, { channel: releaseChannel, packedFiles: files })
+  assertExpectedPackageFiles(files)
 
   const tarballPath = join(artifactDir, entry.filename)
   const tarball = readFileSync(tarballPath)
@@ -134,45 +114,15 @@ try {
   const installedManifest = JSON.parse(readFileSync(join(installedRoot, 'package.json'), 'utf8'))
   assert.equal(installedManifest.name, packageJson.name)
   assert.equal(installedManifest.version, packageJson.version)
-  assertProjectManifest(installedManifest, { channel, packedFiles: files })
-
-  const privatePathPatterns = [
-    /(?:^|[\s"'`])\/Users\/[^/\s]+/mu,
-    /(?:^|[\s"'`])\/home\/[^/\s]+/mu,
-    /(?:^|[\s"'`])[A-Za-z]:\\Users\\[^\\\s]+/mu,
-  ]
-  for (const file of files) {
-    const contents = readFileSync(join(installedRoot, file), 'utf8')
-    assert.ok(
-      privatePathPatterns.every(pattern => !pattern.test(contents)),
-      `packed artifact contains a private user path in ${file}`,
-    )
-  }
-
-  for (const forbidden of ['source_records.json', 'source_state.json', 'review_queue.json']) {
-    assert.ok(
-      [...files].every(file => !file.endsWith(forbidden)),
-      `packed artifact contains private maintenance state ${forbidden}`,
-    )
-  }
-
-  const catalog = JSON.parse(readFileSync(join(installedRoot, 'data', 'catalog.json'), 'utf8'))
-  for (const record of catalog.records ?? []) {
-    assert.notEqual(record.source_tier, 'apilayer', `public catalog contains private record ${record.id}`)
-    for (const provenance of record.provenance ?? []) {
-      assert.ok(
-        !String(provenance.source_id ?? '').startsWith('apilayer'),
-        `public catalog contains APILayer provenance in ${record.id}`,
-      )
-    }
-  }
+  assertProjectManifest(installedManifest, { channel: releaseChannel, packedFiles: files })
+  const audit = auditInstalledPackage(installedRoot, files)
 
   console.log(JSON.stringify({
     package: `${entry.name}@${entry.version}`,
-    channel,
+    channel: releaseChannel,
     filename: entry.filename,
     files: files.size,
-    records: catalog.records.length,
+    records: audit.recordCount,
     sha256,
     integrity,
   }))

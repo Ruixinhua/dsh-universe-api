@@ -1,0 +1,237 @@
+name: Promote stable release to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Stable tag to promote, for example v0.1.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-production
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: Verify accepted Draft Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      asset_set_digest: ${{ steps.download.outputs.asset_set_digest }}
+      commit_sha: ${{ steps.identity.outputs.commit_sha }}
+      integrity: ${{ steps.verify.outputs.integrity }}
+      release_draft: ${{ steps.download.outputs.release_draft }}
+      release_id: ${{ steps.download.outputs.release_id }}
+      sha256: ${{ steps.verify.outputs.sha256 }}
+      version: ${{ steps.verify.outputs.version }}
+    steps:
+      - name: Check out the requested stable tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up trusted-publishing runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.20.0
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Pin an OIDC-capable npm CLI
+        run: npm install --global npm@11.13.0
+
+      - name: Validate dispatch ref and stable tag identity
+        id: identity
+        shell: bash
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          if [[ "$GITHUB_REF_TYPE" != tag || "$GITHUB_REF_NAME" != "$TAG" ]]; then
+            echo "Run this workflow from the same tag supplied in inputs.tag" >&2
+            exit 1
+          fi
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs'
+          import { assertReleaseChannel, assertTagMatchesVersion } from './scripts/lib/release-gates.mjs'
+
+          const manifest = JSON.parse(readFileSync('package.json', 'utf8'))
+          assertTagMatchesVersion(process.env.TAG, manifest.version)
+          assertReleaseChannel(manifest.version, 'latest')
+          NODE
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "commit_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Confirm remote tag still points to the accepted commit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-github-tag.mjs --tag "${{ inputs.tag }}" --sha "${{ steps.identity.outputs.commit_sha }}"
+
+      - name: Download exact Draft Release assets
+        id: download
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/download-release-assets.mjs --tag "${{ inputs.tag }}" --output-dir dist --state either
+
+      - name: Verify Release tarball, checksum, and manifest
+        id: verify
+        run: node scripts/verify-release-assets.mjs --tag "${{ inputs.tag }}" --asset-dir dist --channel latest
+
+  publish:
+    name: Publish accepted tarball with npm OIDC
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm-production
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      asset_set_digest: ${{ steps.download.outputs.asset_set_digest }}
+      release_draft: ${{ steps.download.outputs.release_draft }}
+      release_id: ${{ steps.download.outputs.release_id }}
+    steps:
+      - name: Check out the requested stable tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.preflight.outputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Set up trusted-publishing runtime
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.20.0
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Pin an OIDC-capable npm CLI
+        run: npm install --global npm@11.13.0
+
+      - name: Confirm remote tag still points to the accepted commit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-github-tag.mjs --tag "${{ inputs.tag }}" --sha "${{ needs.preflight.outputs.commit_sha }}"
+
+      - name: Re-download Release assets after approval
+        id: download
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/download-release-assets.mjs --tag "${{ inputs.tag }}" --output-dir dist --state either
+
+      - name: Re-verify the approved bytes
+        id: verify
+        run: node scripts/verify-release-assets.mjs --tag "${{ inputs.tag }}" --asset-dir dist --channel latest
+
+      - name: Reject asset changes during the approval wait
+        env:
+          ACCEPTED_ASSET_SET: ${{ needs.preflight.outputs.asset_set_digest }}
+          ACCEPTED_INTEGRITY: ${{ needs.preflight.outputs.integrity }}
+          ACCEPTED_SHA256: ${{ needs.preflight.outputs.sha256 }}
+          CURRENT_ASSET_SET: ${{ steps.download.outputs.asset_set_digest }}
+          CURRENT_INTEGRITY: ${{ steps.verify.outputs.integrity }}
+          CURRENT_SHA256: ${{ steps.verify.outputs.sha256 }}
+        run: |
+          test "$CURRENT_ASSET_SET" = "$ACCEPTED_ASSET_SET"
+          test "$CURRENT_INTEGRITY" = "$ACCEPTED_INTEGRITY"
+          test "$CURRENT_SHA256" = "$ACCEPTED_SHA256"
+
+      - name: Plan monotonic npm latest promotion
+        id: promotion
+        env:
+          INTEGRITY: ${{ steps.verify.outputs.integrity }}
+          VERSION: ${{ steps.verify.outputs.version }}
+        run: node scripts/plan-registry-promotion.mjs --version "$VERSION" --integrity "$INTEGRITY"
+
+      - name: Publish the accepted tarball once
+        if: steps.promotion.outputs.promotion_state == 'publish'
+        shell: bash
+        env:
+          RELEASE_DRAFT: ${{ steps.download.outputs.release_draft }}
+          VERSION: ${{ steps.verify.outputs.version }}
+        run: |
+          if [[ "$RELEASE_DRAFT" != true ]]; then
+            echo "A public GitHub Release cannot precede the first npm publication" >&2
+            exit 1
+          fi
+          npm publish "dist/dsh-universe-api-$VERSION.tgz" \
+            --tag latest --access public --ignore-scripts \
+            --registry=https://registry.npmjs.org/
+
+      - name: Verify npm latest after publish or idempotent replay
+        env:
+          INTEGRITY: ${{ steps.verify.outputs.integrity }}
+          VERSION: ${{ steps.verify.outputs.version }}
+        run: node scripts/verify-registry-release.mjs --selector latest --version "$VERSION" --integrity "$INTEGRITY" --attempts 12
+
+  finalize-release:
+    name: Publish the verified GitHub Release
+    needs:
+      - preflight
+      - publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Check out the promoted stable tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.preflight.outputs.commit_sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js 24.20
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24.20.0
+          package-manager-cache: false
+
+      - name: Confirm remote tag still points to the accepted commit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-github-tag.mjs --tag "${{ inputs.tag }}" --sha "${{ needs.preflight.outputs.commit_sha }}"
+
+      - name: Re-download the current Release assets
+        id: download
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/download-release-assets.mjs --tag "${{ inputs.tag }}" --output-dir dist --state either
+
+      - name: Re-verify the current Release assets
+        id: verify
+        run: node scripts/verify-release-assets.mjs --tag "${{ inputs.tag }}" --asset-dir dist --channel latest
+
+      - name: Bind final Release publication to the accepted bytes
+        env:
+          ACCEPTED_ASSET_SET: ${{ needs.preflight.outputs.asset_set_digest }}
+          ACCEPTED_INTEGRITY: ${{ needs.preflight.outputs.integrity }}
+          ACCEPTED_SHA256: ${{ needs.preflight.outputs.sha256 }}
+          CURRENT_ASSET_SET: ${{ steps.download.outputs.asset_set_digest }}
+          CURRENT_INTEGRITY: ${{ steps.verify.outputs.integrity }}
+          CURRENT_SHA256: ${{ steps.verify.outputs.sha256 }}
+        run: |
+          test "$CURRENT_ASSET_SET" = "$ACCEPTED_ASSET_SET"
+          test "$CURRENT_INTEGRITY" = "$ACCEPTED_INTEGRITY"
+          test "$CURRENT_SHA256" = "$ACCEPTED_SHA256"
+
+      - name: Re-verify npm latest before publishing GitHub Release
+        env:
+          INTEGRITY: ${{ needs.preflight.outputs.integrity }}
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: node scripts/verify-registry-release.mjs --selector latest --version "$VERSION" --integrity "$INTEGRITY" --attempts 3
+
+      - name: Publish the Draft Release idempotently
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_DRAFT: ${{ steps.download.outputs.release_draft }}
+          RELEASE_ID: ${{ steps.download.outputs.release_id }}
+        run: |
+          if [[ "$RELEASE_DRAFT" == true ]]; then
+            gh api --method PATCH "/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID" \
+              -F draft=false -F prerelease=false -f make_latest=true >/dev/null
+          fi

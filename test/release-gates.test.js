@@ -8,8 +8,11 @@ import {
   assertRegistryManifest,
   assertReleaseChannel,
   assertTagMatchesVersion,
+  compareStableVersions,
   normalizeBundlePatch,
   parseExactVersion,
+  parseSha256File,
+  releaseChannelForVersion,
 } from '../scripts/lib/release-gates.mjs'
 
 const ROOT = new URL('../', import.meta.url)
@@ -26,6 +29,11 @@ test('release versions and tags use exact stable or rc.N identities', () => {
   assert.deepEqual(parseExactVersion('0.1.0-rc.3'), { version: '0.1.0-rc.3', prerelease: 'rc.3' })
   assert.equal(assertReleaseChannel('0.1.0', 'latest').version, '0.1.0')
   assert.equal(assertReleaseChannel('0.1.0-rc.3', 'next').version, '0.1.0-rc.3')
+  assert.equal(releaseChannelForVersion('0.1.0'), 'latest')
+  assert.equal(releaseChannelForVersion('0.1.0-rc.3'), 'next')
+  assert.equal(compareStableVersions('0.1.0', '0.1.0'), 0)
+  assert.equal(compareStableVersions('0.2.0', '0.1.999'), 1)
+  assert.equal(compareStableVersions('0.1.9', '0.2.0'), -1)
   assert.equal(assertTagMatchesVersion('v0.1.0-rc.3', '0.1.0-rc.3').prerelease, 'rc.3')
 
   for (const invalid of ['latest', 'v0.1.0', '0.1', '01.0.0', '0.1.0+build', '0.1.0-rc.03']) {
@@ -46,8 +54,18 @@ test('bundle patch paths are normalized and unsafe paths are rejected', () => {
   assert.throws(() => normalizeBundlePatch('a'.repeat(513)), /512/u)
 })
 
+test('release checksum files bind one lowercase digest to the exact tarball name', () => {
+  const digest = 'a'.repeat(64)
+  assert.equal(parseSha256File(`${digest}  package.tgz\n`, 'package.tgz'), digest)
+  assert.throws(() => parseSha256File(`${digest}  other.tgz\n`, 'package.tgz'), /filename/u)
+  assert.throws(() => parseSha256File(`${digest} package.tgz\n`, 'package.tgz'), /must contain one/u)
+  assert.throws(() => parseSha256File(`${digest.toUpperCase()}  package.tgz\n`, 'package.tgz'), /must contain one/u)
+})
+
 test('project manifest enforces package identity and stricter shipping policy', () => {
-  assert.doesNotThrow(() => assertProjectManifest(manifest, { channel: 'next' }))
+  assert.doesNotThrow(() => assertProjectManifest(manifest, {
+    channel: releaseChannelForVersion(manifest.version),
+  }))
   assert.doesNotThrow(() => assertLockfileMatchesManifest(lockfile, manifest))
 
   const cases = [
@@ -62,7 +80,9 @@ test('project manifest enforces package identity and stricter shipping policy', 
     [candidate({ dsh: { bundle: { patch: '../escape.yml' } } }), /unsafe path segment/u],
   ]
   for (const [invalid, expected] of cases) {
-    assert.throws(() => assertProjectManifest(invalid, { channel: 'next' }), expected)
+    assert.throws(() => assertProjectManifest(invalid, {
+      channel: releaseChannelForVersion(invalid.version),
+    }), expected)
   }
 })
 

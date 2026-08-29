@@ -38,8 +38,8 @@
     "verify:loader": "node --expose-internals scripts/verify-loader-profile.mjs",
     "catalog:validate": "node scripts/run-python.mjs maintenance/validate_catalog.py",
     "catalog:sync:dry-run": "node scripts/run-python.mjs maintenance/sync_catalog.py --dry-run",
-    "verify:package": "node scripts/verify-package.mjs --channel next",
-    "verify:publish": "npm publish --dry-run --tag next --access public --ignore-scripts --json",
+    "verify:package": "node scripts/verify-package.mjs --channel auto",
+    "verify:publish": "node scripts/verify-publish.mjs",
     "check": "npm run typecheck && npm test && npm run verify:loader && npm run catalog:validate && npm run verify:package && npm run verify:publish"
   },
   "keywords": [

@@ -65,6 +65,27 @@ export function assertReleaseChannel(version, channel) {
   return parsed
 }
 
+/** @param {unknown} version @returns {ReleaseChannel} */
+export function releaseChannelForVersion(version) {
+  return parseExactVersion(version).prerelease === null ? 'latest' : 'next'
+}
+
+/** @param {unknown} left @param {unknown} right */
+export function compareStableVersions(left, right) {
+  const leftParsed = assertReleaseChannel(left, 'latest')
+  const rightParsed = assertReleaseChannel(right, 'latest')
+  const leftParts = leftParsed.version.split('.').map(part => BigInt(part))
+  const rightParts = rightParsed.version.split('.').map(part => BigInt(part))
+  for (let index = 0; index < 3; index += 1) {
+    const leftPart = leftParts[index]
+    const rightPart = rightParts[index]
+    invariant(leftPart !== undefined && rightPart !== undefined, 'stable version must contain three numeric parts')
+    if (leftPart < rightPart) return -1
+    if (leftPart > rightPart) return 1
+  }
+  return 0
+}
+
 /** @param {unknown} tag @param {unknown} version */
 export function assertTagMatchesVersion(tag, version) {
   const parsed = parseExactVersion(version)
@@ -89,6 +110,15 @@ export function normalizeBundlePatch(patch) {
     'dsh.bundle.patch contains an unsafe path segment',
   )
   return normalized
+}
+
+/** @param {unknown} contents @param {string} expectedFilename */
+export function parseSha256File(contents, expectedFilename) {
+  invariant(typeof contents === 'string', 'SHA-256 file must be text')
+  const match = /^([0-9a-f]{64}) {2}([^\r\n]+)\r?\n?$/u.exec(contents)
+  invariant(match, 'SHA-256 file must contain one lowercase digest and filename')
+  invariant(match[2] === expectedFilename, 'SHA-256 filename does not match the Release tarball')
+  return match[1]
 }
 
 /** @param {unknown} repository */
@@ -174,14 +204,23 @@ export function assertLockfileMatchesManifest(lockfile, manifest) {
  * equality is project policy layered on top of the Desktop Market boundary.
  *
  * @param {any} manifest
- * @param {{expectedVersion: string, expectedIntegrity: string}} expected
  */
-export function assertRegistryManifest(manifest, { expectedVersion, expectedIntegrity }) {
+export function assertRegistryPackageManifest(manifest) {
   invariant(isObject(manifest), 'registry manifest must be an object')
   invariant(manifest.name === PACKAGE_NAME, `registry package name must equal ${PACKAGE_NAME}`)
   assertReleaseChannel(manifest.version, 'latest')
-  invariant(manifest.version === expectedVersion, 'registry latest version does not match the promoted version')
   normalizeBundlePatch(manifest.dsh?.bundle?.patch)
+  invariant(typeof manifest.dist?.integrity === 'string', 'registry tarball integrity is missing')
+  return Object.freeze({ version: manifest.version, integrity: manifest.dist.integrity })
+}
+
+/**
+ * @param {any} manifest
+ * @param {{expectedVersion: string, expectedIntegrity: string}} expected
+ */
+export function assertRegistryManifest(manifest, { expectedVersion, expectedIntegrity }) {
+  const actual = assertRegistryPackageManifest(manifest)
+  invariant(actual.version === expectedVersion, 'registry latest version does not match the promoted version')
   invariant(manifest.dist?.integrity === expectedIntegrity, 'registry tarball integrity does not match the accepted Release asset')
 }
 

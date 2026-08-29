@@ -23,11 +23,12 @@ jobs:
     name: Build verified release assets
     needs: verify
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: read
     outputs:
       package_version: ${{ steps.version.outputs.package_version }}
+      release_channel: ${{ steps.version.outputs.release_channel }}
     steps:
       - name: Check out tagged source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -43,42 +44,48 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Verify tag matches package version
+      - name: Verify tag and determine release channel
         id: version
         shell: bash
         run: |
-          package_version="$(node --input-type=module -e "import pkg from './package.json' with { type: 'json' }; process.stdout.write(pkg.version)")"
-          tag_version="${GITHUB_REF_NAME#v}"
-          if [[ "$tag_version" != "$package_version" ]]; then
-            echo "Tag $GITHUB_REF_NAME does not match package version $package_version" >&2
-            exit 1
-          fi
-          echo "package_version=$package_version" >> "$GITHUB_OUTPUT"
+          metadata="$(node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs'
+          import { assertTagMatchesVersion } from './scripts/lib/release-gates.mjs'
 
-      - name: Build release assets
-        shell: bash
-        run: |
-          mkdir -p dist
-          npm pack --pack-destination dist
-          archive="dsh-universe-api-${{ steps.version.outputs.package_version }}.tgz"
-          test -f "dist/$archive"
-          test -f data/update_report.json
-          (
-            cd dist
-            sha256sum "$archive" > "$archive.sha256"
-          )
-          cp data/update_report.json dist/catalog-update-report.json
+          const manifest = JSON.parse(readFileSync('package.json', 'utf8'))
+          const parsed = assertTagMatchesVersion(process.env.GITHUB_REF_NAME, manifest.version)
+          process.stdout.write(JSON.stringify({
+            version: parsed.version,
+            channel: parsed.prerelease === null ? 'latest' : 'next',
+          }))
+          NODE
+          )"
+          package_version="$(node -e "process.stdout.write(JSON.parse(process.argv[1]).version)" "$metadata")"
+          release_channel="$(node -e "process.stdout.write(JSON.parse(process.argv[1]).channel)" "$metadata")"
+          echo "package_version=$package_version" >> "$GITHUB_OUTPUT"
+          echo "release_channel=$release_channel" >> "$GITHUB_OUTPUT"
+
+      - name: Build and audit the only release tarball
+        env:
+          RELEASE_CHANNEL: ${{ steps.version.outputs.release_channel }}
+        run: node scripts/verify-package.mjs --channel "$RELEASE_CHANNEL" --artifact-dir dist
+
+      - name: Add the catalog update report
+        run: cp data/update_report.json dist/catalog-update-report.json
 
       - name: Preserve verified assets with the workflow run
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: dsh-universe-api-${{ steps.version.outputs.package_version }}
-          path: dist/
+          path: |
+            dist/dsh-universe-api-${{ steps.version.outputs.package_version }}.tgz
+            dist/dsh-universe-api-${{ steps.version.outputs.package_version }}.tgz.sha256
+            dist/catalog-update-report.json
           if-no-files-found: error
           retention-days: 30
 
   release:
-    name: Publish GitHub Release
+    name: Reconcile GitHub Release
     needs: package
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -91,19 +98,86 @@ jobs:
           name: dsh-universe-api-${{ needs.package.outputs.package_version }}
           path: dist
 
-      - name: Create GitHub Release
+      - name: Verify downloaded artifact checksum
+        working-directory: dist
+        run: sha256sum --check "dsh-universe-api-${{ needs.package.outputs.package_version }}.tgz.sha256"
+
+      - name: Create or verify the GitHub Release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           PACKAGE_VERSION: ${{ needs.package.outputs.package_version }}
+          RELEASE_CHANNEL: ${{ needs.package.outputs.release_channel }}
         run: |
-          release_flags=()
-          if [[ "$PACKAGE_VERSION" == *-* ]]; then
-            release_flags+=(--prerelease --latest=false)
+          archive="dsh-universe-api-$PACKAGE_VERSION.tgz"
+          checksum="$archive.sha256"
+          report="catalog-update-report.json"
+          expected=("$archive" "$checksum" "$report")
+
+          release_list="$(gh api --paginate "/repos/$GITHUB_REPOSITORY/releases?per_page=100")"
+          matches="$(printf '%s\n' "$release_list" | jq -sc --arg tag "$GITHUB_REF_NAME" 'add | map(select(.tag_name == $tag))')"
+          match_count="$(jq 'length' <<< "$matches")"
+          if [[ "$match_count" -gt 1 ]]; then
+            echo "More than one Release uses tag $GITHUB_REF_NAME" >&2
+            exit 1
           fi
-          gh release create "$GITHUB_REF_NAME" dist/* \
-            --repo "$GITHUB_REPOSITORY" \
-            --verify-tag \
-            --generate-notes \
-            --title "$GITHUB_REF_NAME" \
-            "${release_flags[@]}"
+
+          if [[ "$match_count" -eq 0 ]]; then
+            flags=(--latest=false)
+            if [[ "$RELEASE_CHANNEL" == next ]]; then
+              flags+=(--prerelease)
+            else
+              flags+=(--draft)
+            fi
+            gh release create "$GITHUB_REF_NAME" \
+              "dist/$archive" "dist/$checksum" "dist/$report" \
+              --repo "$GITHUB_REPOSITORY" \
+              --verify-tag \
+              --generate-notes \
+              --title "$GITHUB_REF_NAME" \
+              "${flags[@]}"
+            exit 0
+          fi
+
+          release="$(jq '.[0]' <<< "$matches")"
+          draft="$(jq -r '.draft' <<< "$release")"
+          prerelease="$(jq -r '.prerelease' <<< "$release")"
+          extra_assets="$(jq -r --arg a "$archive" --arg c "$checksum" --arg r "$report" \
+            '.assets[] | select(.name != $a and .name != $c and .name != $r) | .name' <<< "$release")"
+          if [[ -n "$extra_assets" ]]; then
+            echo "Release contains unexpected assets:" >&2
+            echo "$extra_assets" >&2
+            exit 1
+          fi
+
+          for name in "${expected[@]}"; do
+            local_digest="sha256:$(sha256sum "dist/$name" | cut -d ' ' -f 1)"
+            asset_count="$(jq --arg name "$name" '[.assets[] | select(.name == $name)] | length' <<< "$release")"
+            if [[ "$asset_count" -eq 0 ]]; then
+              gh release upload "$GITHUB_REF_NAME" "dist/$name" --repo "$GITHUB_REPOSITORY"
+              continue
+            fi
+            if [[ "$asset_count" -ne 1 ]]; then
+              echo "Release contains duplicate asset name $name" >&2
+              exit 1
+            fi
+            remote_digest="$(jq -r --arg name "$name" '.assets[] | select(.name == $name) | .digest' <<< "$release")"
+            if [[ "$remote_digest" != "$local_digest" ]]; then
+              echo "Release asset digest mismatch for $name" >&2
+              exit 1
+            fi
+          done
+
+          if [[ "$RELEASE_CHANNEL" == next ]]; then
+            if [[ "$draft" == false && "$prerelease" != true ]]; then
+              echo "RC tag is attached to a non-prerelease Release" >&2
+              exit 1
+            fi
+            if [[ "$draft" == true ]]; then
+              gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+                --draft=false --prerelease --latest=false
+            fi
+          elif [[ "$prerelease" == true ]]; then
+            echo "Stable tag is attached to a prerelease" >&2
+            exit 1
+          fi
