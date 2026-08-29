@@ -12,6 +12,7 @@ import {
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
+import { inspect } from 'node:util'
 
 import {
   CatalogError,
@@ -109,7 +110,10 @@ test('catalogPath must be absolute and an explicit failure never falls back', ()
       (error) => {
         assert.ok(error instanceof CatalogError)
         assert.match(error.message, /External catalog cannot be read/u)
+        assert.equal(error.code, 'ENOENT')
+        assert.equal(error.cause, undefined)
         assert.ok(!error.message.includes(missing))
+        assert.ok(!inspect(error, { depth: null }).includes(missing))
         return true
       },
     )

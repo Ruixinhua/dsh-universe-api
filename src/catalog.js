@@ -144,12 +144,25 @@ const DEFAULT_ALIASES_PATH = fileURLToPath(new URL('../data/query_aliases.json',
 export class CatalogError extends Error {
   /**
    * @param {string} message
-   * @param {ErrorOptions} [options]
+   * @param {{code?: string | undefined}} [options]
    */
-  constructor(message, options) {
-    super(message, options);
+  constructor(message, { code } = {}) {
+    super(message);
     this.name = 'CatalogError';
+    if (code !== undefined) this.code = code;
   }
+}
+
+/** @param {unknown} error @returns {string | undefined} */
+function safeErrorCode(error) {
+  if (!error || typeof error !== 'object' || !('code' in error)) return undefined;
+  const code = /** @type {{code?: unknown}} */ (error).code;
+  return typeof code === 'string' && /^[A-Z0-9_]+$/u.test(code) ? code : undefined;
+}
+
+/** @param {string} label @param {unknown} error */
+function unreadableCatalogError(label, error) {
+  return new CatalogError(`${label} cannot be read`, { code: safeErrorCode(error) });
 }
 
 /** @param {any} value @returns {value is AnyObject} */
@@ -735,14 +748,14 @@ function parseJson(bytes, label) {
   let text;
   try {
     text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-  } catch (error) {
-    throw new CatalogError(`${label} is not valid UTF-8`, { cause: error });
+  } catch {
+    throw new CatalogError(`${label} is not valid UTF-8`);
   }
   scanJsonDocument(text, label);
   try {
     return JSON.parse(text);
-  } catch (error) {
-    throw new CatalogError(`${label} is not valid JSON`, { cause: error });
+  } catch {
+    throw new CatalogError(`${label} is not valid JSON`);
   }
 }
 
@@ -752,7 +765,7 @@ function readJsonFile(path, label) {
   try {
     pathStats = statSync(path);
   } catch (error) {
-    throw new CatalogError(`${label} cannot be read`, { cause: error });
+    throw unreadableCatalogError(label, error);
   }
   if (!pathStats.isFile()) throw new CatalogError(`${label} must be a regular file`);
 
@@ -762,7 +775,7 @@ function readJsonFile(path, label) {
       | (typeof constants.O_NONBLOCK === 'number' ? constants.O_NONBLOCK : 0);
     descriptor = openSync(path, flags);
   } catch (error) {
-    throw new CatalogError(`${label} cannot be read`, { cause: error });
+    throw unreadableCatalogError(label, error);
   }
   try {
     const stats = fstatSync(descriptor);
@@ -790,7 +803,7 @@ function readJsonFile(path, label) {
     return parseJson(bytes.subarray(0, offset), label);
   } catch (error) {
     if (error instanceof CatalogError) throw error;
-    throw new CatalogError(`${label} cannot be read`, { cause: error });
+    throw unreadableCatalogError(label, error);
   } finally {
     closeSync(descriptor);
   }
@@ -806,10 +819,9 @@ function loadAliases(path, { optional }) {
   try {
     payload = readJsonFile(path, 'Query aliases file');
   } catch (error) {
-    const cause = error instanceof CatalogError
-      ? /** @type {NodeJS.ErrnoException | undefined} */ (error.cause)
-      : undefined;
-    if (optional && cause?.code === 'ENOENT') return Object.freeze({});
+    if (optional && error instanceof CatalogError && error.code === 'ENOENT') {
+      return Object.freeze({});
+    }
     throw error;
   }
   const aliases = isPlainObject(payload) && Object.hasOwn(payload, 'aliases')
@@ -880,7 +892,7 @@ function loadCatalogFile(path, source, aliasesPath, aliasesOptional) {
     index = createCatalogIndex({ metadata, records, aliases });
   } catch (error) {
     if (error instanceof SearchIndexLimitError) {
-      throw new CatalogError(`Catalog cannot be indexed safely: ${error.message}`, { cause: error });
+      throw new CatalogError(`Catalog cannot be indexed safely: ${error.message}`);
     }
     throw error;
   }

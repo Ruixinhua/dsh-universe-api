@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
-import { Context } from '@deepseek-ai/cordis'
+import { Context, Logger } from '@deepseek-ai/cordis'
 import { CallId } from '@deepseek-ai/dsh-llm'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
-import { apply, inject, name } from '../index.js'
+import * as UniversePlugin from '../index.js'
+
+const { apply, inject, name } = UniversePlugin
 
 /**
  * @typedef {{
@@ -101,4 +105,28 @@ test('real DSH tool pipeline rejects unknown credential-like arguments without e
     .join('')
   assert.match(content, /unknown search argument\(s\): apiKey/u)
   assert.ok(!content.includes(secret))
+})
+
+test('Cordis activation logs never expand an external catalog path from an error cause', async () => {
+  const ctx = new Context()
+  await ctx.plugin(SystemPrompt)
+  await ctx.plugin(ToolRuntime)
+  const sensitivePath = join(tmpdir(), 'customer-alpha-private-catalog-do-not-log.json')
+  const fiber = ctx.plugin(UniversePlugin, { catalogPath: sensitivePath })
+
+  await assert.rejects(
+    Promise.resolve(fiber),
+    /External catalog cannot be read/u,
+  )
+
+  const exporter = {
+    colors: false,
+    export() {},
+  }
+  const logText = ctx.logger.buffer
+    .map(message => Logger.format(exporter, message))
+    .join('\n')
+  assert.match(logText, /External catalog cannot be read/u)
+  assert.ok(!logText.includes(sensitivePath))
+  await fiber.dispose()
 })
