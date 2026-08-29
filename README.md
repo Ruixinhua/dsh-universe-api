@@ -183,6 +183,12 @@ npm pack --dry-run
 
 For a real acceptance test, install the **release tarball**, not the checkout that produced it. Follow the [manual test checklist](docs/MANUAL_TESTING.md), which covers offline behavior, exact filters, private catalog replacement, the Web profile, and uninstall.
 
+## Market availability
+
+The repository is discoverable through catalog providers such as dshfind, but a GitHub-only release is browseable rather than automatically installable in DSH Community Market. One-click Market installation additionally requires an exact stable npm `latest` and a catalog entry with one unambiguous npm package identity.
+
+Maintainers should follow the [Market distribution and release promotion](docs/MARKET_RELEASE.md) guide. It separates GitHub prereleases, the one-time npm `next` bootstrap, protected OIDC stable promotion, dshfind verification, and the curated directory contribution.
+
 ## Data, privacy, and limitations
 
 - The bundled snapshot was generated from `public-apis/public-apis` commit [`988c57be4616cc9507fd3e8c34adedba5387f079`](https://github.com/public-apis/public-apis/commit/988c57be4616cc9507fd3e8c34adedba5387f079) and is distributed under that project's MIT license. See [third-party notices](THIRD_PARTY_NOTICES.md).
@@ -197,6 +203,7 @@ For a real acceptance test, install the **release tarball**, not the checkout th
 - [Development and architecture](docs/DEVELOPMENT.md)
 - [Catalog maintenance](docs/CATALOG_MAINTENANCE.md)
 - [Manual release-candidate testing](docs/MANUAL_TESTING.md)
+- [Market distribution and release promotion](docs/MARKET_RELEASE.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 

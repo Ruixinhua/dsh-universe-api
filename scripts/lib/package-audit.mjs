@@ -16,6 +16,8 @@ export const EXPECTED_PACKAGE_FILES = Object.freeze([
   'docs/CATALOG_MAINTENANCE.md',
   'docs/DEVELOPMENT.md',
   'docs/MANUAL_TESTING.md',
+  'docs/MARKET_RELEASE.md',
+  'docs/MARKET_RELEASE.zh-CN.md',
   'docs/PRIVATE_CATALOG.md',
   'index.js',
   'package.json',

@@ -181,6 +181,12 @@ npm pack --dry-run
 
 真实验收时必须安装 **Release tarball**，不要只测试生成它的本地 checkout。请按[人工测试清单](docs/MANUAL_TESTING.md)验证离线行为、精确过滤、私有目录覆盖、Web profile 和卸载。
 
+## Market 可用性
+
+目录提供方（例如 dshfind）已经可以发现本仓库，但只有 GitHub Release 时，条目属于“可浏览”，并不自动具备 DSH Community Market 一键安装资格。一键安装还要求 npm `latest` 是精确稳定版，并且目录条目只暴露一个无歧义的 npm 包身份。
+
+维护者应遵循[Market 分发与版本提升](docs/MARKET_RELEASE.zh-CN.md)指南。它分别说明 GitHub prerelease、一次性的 npm `next` 建包、受保护的 OIDC 稳定版提升、dshfind 验证和精选目录投稿。
+
 ## 数据、隐私与限制
 
 - 内置快照来自 `public-apis/public-apis` 的固定提交 [`988c57be4616cc9507fd3e8c34adedba5387f079`](https://github.com/public-apis/public-apis/commit/988c57be4616cc9507fd3e8c34adedba5387f079)，按其 MIT 许可证分发。详见[第三方声明](THIRD_PARTY_NOTICES.md)。
@@ -195,6 +201,7 @@ npm pack --dry-run
 - [开发与架构](docs/DEVELOPMENT.md)
 - [目录维护](docs/CATALOG_MAINTENANCE.md)
 - [候选版本人工验收](docs/MANUAL_TESTING.md)
+- [Market 分发与版本提升](docs/MARKET_RELEASE.zh-CN.md)
 - [贡献指南](CONTRIBUTING.md)
 - [安全策略](SECURITY.md)
 
