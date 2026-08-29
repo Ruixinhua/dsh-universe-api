@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [0.1.0-rc.3] - 2026-08-29
+
+### Added
+
+- Exact manifest, tarball, checksum, private-data, lifecycle-script, and npm release-channel gates.
+- Protected stable promotion through a Draft GitHub Release, environment approval, npm OIDC trusted publishing, provenance, and post-publish integrity verification.
+- Bilingual Market distribution, npm bootstrap, dshfind verification, and curated-directory guidance.
+
+### Changed
+
+- Declare Schemastery as a DSH runtime peer while retaining an exact development version and packed Loader verification.
+- Reuse the single audited Release tarball across GitHub and npm instead of rebuilding during promotion.
+
+### Fixed
+
+- Prevent external `catalogPath` values from reappearing through recursive filesystem error causes in Cordis activation logs.
+- Refuse mutable-tag, changed-asset, npm `latest` downgrade, and stale-release promotion states.
+
 ## [0.1.0-rc.2] - 2026-08-28
 
 ### Added
@@ -32,6 +50,7 @@ All notable changes to this project will be documented in this file. The format 
 - Catalog synchronization and validation tooling.
 - Cross-platform CI, release packaging, checksums, and manual acceptance guidance.
 
-[Unreleased]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0-rc.2...HEAD
+[Unreleased]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0-rc.3...HEAD
+[0.1.0-rc.3]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0-rc.2...v0.1.0-rc.3
 [0.1.0-rc.2]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0-rc.1...v0.1.0-rc.2
 [0.1.0-rc.1]: https://github.com/Ruixinhua/dsh-universe-api/releases/tag/v0.1.0-rc.1

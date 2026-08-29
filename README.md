@@ -6,7 +6,7 @@
 
 > This is a discovery tool, not an API client. It never calls a candidate API, accepts no API keys, and performs no runtime network requests. Verify pricing, availability, authentication, and terms in the provider's official documentation before making an important choice.
 
-Version `0.1.0-rc.2` is a release candidate intended for hands-on testing.
+Version `0.1.0-rc.3` is a release candidate intended for hands-on testing.
 
 ## What it provides
 
@@ -28,9 +28,9 @@ Run all installation commands below in the **DSH Terminal opened from DSH Deskto
 
 ### Compatibility baseline
 
-| Component | Version | Coverage for `0.1.0-rc.2` |
+| Component | Version | Coverage for `0.1.0-rc.3` |
 | --- | --- | --- |
-| `dsh-universe-api` | `0.1.0-rc.2` | Current release candidate |
+| `dsh-universe-api` | `0.1.0-rc.3` | Current release candidate |
 | DSH Desktop | `2.0.3` | Contract target; hands-on Desktop acceptance is still pending |
 | DSH runtime packages | `0.1.1-rc.2` | Native tool registration, execution, and packed profile Loader tests |
 | Cordis | `4.0.1` | Automated tests |
@@ -52,7 +52,7 @@ dsh plugin add /absolute/path/to/dsh-universe-api
 ### GitHub tag
 
 ```bash
-dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.2
+dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.3
 ```
 
 The package is pure ESM and has no `build` or `prepare` install hook, so a GitHub installation does not need pnpm `allowBuilds` permission.
@@ -62,18 +62,18 @@ The package is pure ESM and has no `build` or `prepare` install hook, so a GitHu
 Download the `.tgz` and matching `.sha256` assets from the GitHub release, place them in the same directory, and verify the checksum:
 
 ```bash
-sha256sum --check dsh-universe-api-0.1.0-rc.2.tgz.sha256
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.2.tgz
+sha256sum --check dsh-universe-api-0.1.0-rc.3.tgz.sha256
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.3.tgz
 ```
 
-On macOS, use `shasum -a 256 -c dsh-universe-api-0.1.0-rc.2.tgz.sha256` if `sha256sum` is unavailable.
+On macOS, use `shasum -a 256 -c dsh-universe-api-0.1.0-rc.3.tgz.sha256` if `sha256sum` is unavailable.
 
 On Windows, first change to the directory containing both downloaded files, or replace `$archive` and `$checksum` below with absolute paths. Verify the archive and install that exact verified file in PowerShell:
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$archive = '.\dsh-universe-api-0.1.0-rc.2.tgz'
-$checksum = '.\dsh-universe-api-0.1.0-rc.2.tgz.sha256'
+$archive = '.\dsh-universe-api-0.1.0-rc.3.tgz'
+$checksum = '.\dsh-universe-api-0.1.0-rc.3.tgz.sha256'
 $archivePath = (Resolve-Path -LiteralPath $archive).Path
 $expected = ((Get-Content -LiteralPath $checksum -Raw).Trim() -split '\s+')[0]
 $actual = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash

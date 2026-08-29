@@ -10,8 +10,8 @@ Use this checklist to accept a release artifact. Record the DSH Desktop version,
 4. Install the downloaded tarball, not a local source checkout.
 
 ```bash
-sha256sum --check dsh-universe-api-0.1.0-rc.2.tgz.sha256
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.2.tgz
+sha256sum --check dsh-universe-api-0.1.0-rc.3.tgz.sha256
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.3.tgz
 dsh --dump-config
 ```
 
@@ -19,8 +19,8 @@ On macOS, use `shasum -a 256 -c` when `sha256sum` is unavailable. On Windows, fi
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$archive = '.\dsh-universe-api-0.1.0-rc.2.tgz'
-$checksum = '.\dsh-universe-api-0.1.0-rc.2.tgz.sha256'
+$archive = '.\dsh-universe-api-0.1.0-rc.3.tgz'
+$checksum = '.\dsh-universe-api-0.1.0-rc.3.tgz.sha256'
 $archivePath = (Resolve-Path -LiteralPath $archive).Path
 $expected = ((Get-Content -LiteralPath $checksum -Raw).Trim() -split '\s+')[0]
 $actual = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
@@ -106,7 +106,7 @@ After the final failure case, leave the default plugin row with no `catalogPath`
 Install the same tarball into the ordinary `web` profile, inspect its assembled configuration, and start that profile:
 
 ```bash
-dsh plugin --profile web add /absolute/path/to/dsh-universe-api-0.1.0-rc.2.tgz
+dsh plugin --profile web add /absolute/path/to/dsh-universe-api-0.1.0-rc.3.tgz
 dsh --profile web --dump-config
 dsh --profile web
 ```
@@ -117,24 +117,24 @@ Pass when the tool loads and behaves the same without any DSH Desktop-only servi
 
 ## Upgrade from a fixed release
 
-This section intentionally downgrades the profile prepared above, then upgrades it again. For the `0.1.0-rc.2` acceptance, install `v0.1.0-rc.1` first:
+This section intentionally downgrades the profile prepared above, then upgrades it again. For the `0.1.0-rc.3` acceptance, install `v0.1.0-rc.2` first:
 
 ```bash
-dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.1
+dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.2
 dsh --dump-config
 ```
 
 Choose **Quit** from the tray, start Desktop again, and repeat the core search. Pass this downgrade stage only when the Plugin list reports `universe-api` as mounted, the tool executes, and catalog source remains `bundled-public`.
 
-Then choose one of these `0.1.0-rc.2` sources; do not remove the existing bundle first:
+Then choose one of these `0.1.0-rc.3` sources; do not remove the existing bundle first:
 
 - **Release tarball:** download the new `.tgz` and `.sha256`, verify them as described above, and install that exact verified tarball. On Windows, repeat the PowerShell block with the new filenames and use the resulting `$archivePath`. On Linux or macOS run:
 
 ```bash
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.2.tgz
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0-rc.3.tgz
 ```
 
-- **GitHub tag:** run `dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.2`. This separately fetched Git checkout is not authenticated by the Release tarball checksum.
+- **GitHub tag:** run `dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.0-rc.3`. This separately fetched Git checkout is not authenticated by the Release tarball checksum.
 
 Run `dsh --dump-config` and confirm that the profile still contains exactly one `dsh-universe-api` bundle layer and retains the expected `catalogPath` configuration, if any. Choose **Quit** from the tray, restart, and repeat the core search.
 
