@@ -38,8 +38,9 @@
     "verify:loader": "node --expose-internals scripts/verify-loader-profile.mjs",
     "catalog:validate": "node scripts/run-python.mjs maintenance/validate_catalog.py",
     "catalog:sync:dry-run": "node scripts/run-python.mjs maintenance/sync_catalog.py --dry-run",
-    "verify:package": "node scripts/verify-package.mjs",
-    "check": "npm run typecheck && npm test && npm run verify:loader && npm run catalog:validate && npm run verify:package"
+    "verify:package": "node scripts/verify-package.mjs --channel next",
+    "verify:publish": "npm publish --dry-run --tag next --access public --ignore-scripts --json",
+    "check": "npm run typecheck && npm test && npm run verify:loader && npm run catalog:validate && npm run verify:package && npm run verify:publish"
   },
   "keywords": [
     "deepseek-harness",
@@ -58,6 +59,10 @@
     "url": "https://github.com/Ruixinhua/dsh-universe-api/issues"
   },
   "homepage": "https://github.com/Ruixinhua/dsh-universe-api#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
     "@deepseek-ai/dsh-tools": ">=0.1.1-rc.2 <0.2.0",

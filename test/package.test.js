@@ -9,13 +9,14 @@ test('package declares an installable no-build DSH bundle', async () => {
   const packageLock = JSON.parse(await readFile(new URL('package-lock.json', ROOT), 'utf8'))
 
   assert.equal(packageJson.name, 'dsh-universe-api')
-  assert.equal(packageJson.version, '0.1.0-rc.2')
   assert.equal(packageLock.version, packageJson.version)
   assert.equal(packageLock.packages?.['']?.version, packageJson.version)
   assert.equal(packageJson.type, 'module')
   assert.equal(packageJson.main, 'index.js')
   assert.equal(packageJson.dsh?.bundle?.patch, './cordis.patch.yml')
   assert.equal(packageJson.scripts?.prepare, undefined)
+  assert.equal(packageJson.publishConfig?.registry, 'https://registry.npmjs.org/')
+  assert.equal(packageJson.publishConfig?.access, 'public')
   assert.equal(
     packageJson.scripts?.['verify:loader'],
     'node --expose-internals scripts/verify-loader-profile.mjs',
