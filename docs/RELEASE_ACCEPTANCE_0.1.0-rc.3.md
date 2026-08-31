@@ -54,4 +54,4 @@ This record lets a future maintainer verify which release artifact and behaviors
 
 ## Next gate
 
-Configure the package's protected npm Trusted Publisher, prepare and accept the stable Draft Release, then use the protected workflow to publish `0.1.0` and replace the transitional prerelease `latest`. Market installability remains blocked until that exact stable registry state is verified.
+The protected npm Trusted Publisher is configured. Prepare and accept the stable `v0.1.0` Draft Release, then use the protected workflow to publish the accepted bytes and replace the transitional prerelease `latest`. Market installability remains blocked until that exact stable registry state is verified.

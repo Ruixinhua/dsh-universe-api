@@ -48,3 +48,12 @@ test('CI runs the packed Loader profile smoke on every supported operating syste
     /- name: Run packed Loader profile smoke\n {8}run: npm run verify:loader/u,
   )
 })
+
+test('Release assets stay bound to the immutable remote tag commit', async () => {
+  const workflow = await readFile(new URL('.github/workflows/release.yml', ROOT), 'utf8')
+  const checks = workflow.match(
+    /node scripts\/verify-github-tag\.mjs --tag "\$GITHUB_REF_NAME" --sha "\$GITHUB_SHA"/gu,
+  ) ?? []
+
+  assert.equal(checks.length, 2)
+})

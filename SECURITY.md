@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Until the first stable release, only the latest `0.1.0` release candidate receives security fixes. After a stable release, only the latest minor release line will be supported unless a release note says otherwise.
+Pre-release builds receive security fixes only until their corresponding stable version is publicly released. For stable builds, only the most recent release in the latest minor line is supported unless a release note says otherwise.
 
 ## Report a vulnerability
 

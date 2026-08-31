@@ -1,6 +1,6 @@
 {
   "name": "dsh-universe-api",
-  "version": "0.1.0-rc.3",
+  "version": "0.1.0",
   "description": "Offline, deterministic public API discovery for DeepSeek Harness and DSH Desktop.",
   "type": "module",
   "main": "index.js",

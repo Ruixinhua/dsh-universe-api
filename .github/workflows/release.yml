@@ -44,6 +44,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Bind asset build to the current remote tag
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-github-tag.mjs --tag "$GITHUB_REF_NAME" --sha "$GITHUB_SHA"
+
       - name: Verify tag and determine release channel
         id: version
         shell: bash
@@ -92,6 +97,17 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js 22.19
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 22.19.0
+          package-manager-cache: false
+
       - name: Download verified release assets
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
@@ -101,6 +117,11 @@ jobs:
       - name: Verify downloaded artifact checksum
         working-directory: dist
         run: sha256sum --check "dsh-universe-api-${{ needs.package.outputs.package_version }}.tgz.sha256"
+
+      - name: Bind Draft Release to the current remote tag
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/verify-github-tag.mjs --tag "$GITHUB_REF_NAME" --sha "$GITHUB_SHA"
 
       - name: Create or verify the GitHub Release
         shell: bash
