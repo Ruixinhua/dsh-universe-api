@@ -50,6 +50,10 @@ This record identifies the replacement stable Draft artifact accepted after the 
 - npm `next` and `latest` remain `0.1.0-rc.3`; npm `0.1.1` has not been published.
 - No P0 or P1 issue was found.
 
+## Promotion attempt
+
+Workflow run [`33372999049`](https://github.com/Ruixinhua/dsh-universe-api/actions/runs/33372999049) passed Draft preflight, approval-time asset revalidation, and monotonic planning, then failed before registry publication. npm interpreted `dist/dsh-universe-api-0.1.1.tgz` as a GitHub repository shorthand because the local tarball spec lacked a `./` prefix. npm `0.1.1` remained absent and the GitHub Release remained Draft. The immutable version is superseded for publication by `v0.1.2`.
+
 ## Next gate
 
-Run `publish-npm.yml` from `v0.1.1`. The corrected job-scoped Draft visibility must pass preflight and the `npm-production` approval boundary. Publish only the accepted SRI, verify npm provenance and `latest`, then allow the workflow to make this replacement GitHub Release public.
+Generate and accept the `v0.1.2` Draft with an explicit `./dist/...tgz` local package spec. Run the protected workflow from that tag, publish only its accepted SRI, verify npm provenance and `latest`, then allow GitHub publication.

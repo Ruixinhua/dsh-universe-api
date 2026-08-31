@@ -65,4 +65,8 @@ test('npm promotion jobs can read the accepted Draft Release', async () => {
 
   assert.match(preflight, /permissions:\n {6}contents: write/u)
   assert.match(publish, /permissions:\n {6}contents: write\n {6}id-token: write/u)
+  assert.match(
+    publish,
+    /npm publish "\.\/dist\/dsh-universe-api-\$VERSION\.tgz"/u,
+  )
 })

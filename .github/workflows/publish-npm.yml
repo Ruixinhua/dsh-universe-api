@@ -161,7 +161,7 @@ jobs:
             echo "A public GitHub Release cannot precede the first npm publication" >&2
             exit 1
           fi
-          npm publish "dist/dsh-universe-api-$VERSION.tgz" \
+          npm publish "./dist/dsh-universe-api-$VERSION.tgz" \
             --tag latest --access public --ignore-scripts \
             --registry=https://registry.npmjs.org/
 

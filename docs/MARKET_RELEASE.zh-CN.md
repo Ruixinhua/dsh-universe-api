@@ -99,7 +99,7 @@ npm 包存在后才能配置 Trusted Publisher。这是计划中唯一一次交�
 
 6. 检查 preflight 证据，然后批准 `npm-production` job。
 
-工作流会把远端 tag 解析到一个不可变提交；审批后重新下载全部三项资产，并比较它们与 preflight 的组合摘要；直接发布已验收 tarball，绝不重新打包。GitHub 只向具有 push 级权限的调用者返回 Draft 列表，因此 preflight 与获批后的 publish job 使用仅在该 job 生命周期内有效的 `contents: write` 临时令牌，即使它们对 Release 只执行读取；仓库不保存长期 token。单调性检查使用完整 SemVer 优先级：稳定版 `X.Y.Z` 可以覆盖同版本由 npm 自动创建的 `X.Y.Z-rc.N` `latest`，但低于任何较新 prerelease 或稳定版的移动都会被拒绝。只有 npm integrity 验证一致后，Draft GitHub Release 才会公开。重跑时也只接受完全相同的 npm 字节和 Market 身份。
+工作流会把远端 tag 解析到一个不可变提交；审批后重新下载全部三项资产，并比较它们与 preflight 的组合摘要；直接发布已验收 tarball，绝不重新打包。GitHub 只向具有 push 级权限的调用者返回 Draft 列表，因此 preflight 与获批后的 publish job 使用仅在该 job 生命周期内有效的 `contents: write` 临时令牌，即使它们对 Release 只执行读取；仓库不保存长期 token。npm 包参数使用明确的 `./dist/...tgz` 路径，避免被 npm 解析成托管 Git 仓库规范。单调性检查使用完整 SemVer 优先级：稳定版 `X.Y.Z` 可以覆盖同版本由 npm 自动创建的 `X.Y.Z-rc.N` `latest`，但低于任何较新 prerelease 或稳定版的移动都会被拒绝。只有 npm integrity 验证一致后，Draft GitHub Release 才会公开。重跑时也只接受完全相同的 npm 字节和 Market 身份。
 
 ## 验证 Market 资格
 
