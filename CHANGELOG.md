@@ -4,9 +4,19 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-31
+
 ### Added
 
 - Record the exact `v0.1.0` Draft tarball and completed Desktop acceptance evidence used to authorize protected npm promotion.
+
+### Changed
+
+- Supersede the unpublished `v0.1.0` Draft with a replacement stable artifact and acceptance cycle.
+
+### Fixed
+
+- Grant only the ephemeral promotion jobs the push-level repository visibility GitHub requires to read Draft Release assets.
 
 ## [0.1.0] - 2026-08-31
 
@@ -67,7 +77,8 @@ All notable changes to this project will be documented in this file. The format 
 - Catalog synchronization and validation tooling.
 - Cross-platform CI, release packaging, checksums, and manual acceptance guidance.
 
-[Unreleased]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0-rc.3...v0.1.0
 [0.1.0-rc.3]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0-rc.2...v0.1.0-rc.3
 [0.1.0-rc.2]: https://github.com/Ruixinhua/dsh-universe-api/compare/v0.1.0-rc.1...v0.1.0-rc.2
