@@ -2,6 +2,10 @@
 
 Use this checklist to accept a release artifact. Record the DSH Desktop version, operating system, release tag, tarball SHA-256, and result of every case.
 
+Completed records:
+
+- [`v0.1.0-rc.3` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0-rc.3.md)
+
 ## Prepare the release artifact
 
 1. Download the `.tgz`, `.tgz.sha256`, and catalog update report from the same GitHub Release.
