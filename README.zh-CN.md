@@ -183,9 +183,9 @@ npm pack --dry-run
 
 ## Market 可用性
 
-目录提供方（例如 dshfind）已经可以发现本仓库，但只有 GitHub Release 时，条目属于“可浏览”，并不自动具备 DSH Community Market 一键安装资格。一键安装还要求 npm `latest` 是精确稳定版，并且目录条目只暴露一个无歧义的 npm 包身份。
+目录提供方（例如 dshfind）已经可以发现本仓库。即使 npm 上已有 RC，在 npm `latest` 成为精确稳定版、且目录条目只暴露一个无歧义的 npm 包身份前，条目仍只属于“可浏览”或“可手工安装”，不具备 DSH Community Market 一键安装资格。
 
-维护者应遵循[Market 分发与版本提升](docs/MARKET_RELEASE.zh-CN.md)指南。它分别说明 GitHub prerelease、一次性的 npm `next` 建包、受保护的 OIDC 稳定版提升、dshfind 验证和精选目录投稿。
+维护者应遵循[Market 分发与版本提升](docs/MARKET_RELEASE.zh-CN.md)指南。它分别说明 GitHub prerelease、以 npm `next` 发起的 RC 建包（包括 npm 首次发布时的 `latest` 行为）、受保护的 OIDC 稳定版提升、dshfind 验证和精选目录投稿。
 
 ## 数据、隐私与限制
 

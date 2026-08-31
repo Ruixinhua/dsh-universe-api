@@ -106,4 +106,4 @@ For a release candidate:
 6. Install that tarball in DSH Desktop and complete the manual checklist.
 7. Promote only after the release artifact passes; do not substitute local-checkout results.
 
-The project intentionally does not publish to npm for v1.
+For Market distribution, an accepted RC may establish package ownership under npm `next`, followed by a protected OIDC promotion of the accepted stable Release tarball. Follow [the Market release guide](MARKET_RELEASE.md); never publish a locally rebuilt substitute.

@@ -185,9 +185,9 @@ For a real acceptance test, install the **release tarball**, not the checkout th
 
 ## Market availability
 
-The repository is discoverable through catalog providers such as dshfind, but a GitHub-only release is browseable rather than automatically installable in DSH Community Market. One-click Market installation additionally requires an exact stable npm `latest` and a catalog entry with one unambiguous npm package identity.
+The repository is discoverable through catalog providers such as dshfind. An RC may also exist on npm, but the entry remains browseable or manually installable until npm `latest` is an exact stable version and the catalog exposes one unambiguous npm package identity.
 
-Maintainers should follow the [Market distribution and release promotion](docs/MARKET_RELEASE.md) guide. It separates GitHub prereleases, the one-time npm `next` bootstrap, protected OIDC stable promotion, dshfind verification, and the curated directory contribution.
+Maintainers should follow the [Market distribution and release promotion](docs/MARKET_RELEASE.md) guide. It separates GitHub prereleases, the RC bootstrap requested under npm `next` (including npm's first-publication `latest` behavior), protected OIDC stable promotion, dshfind verification, and the curated directory contribution.
 
 ## Data, privacy, and limitations
 

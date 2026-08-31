@@ -71,19 +71,51 @@ export function releaseChannelForVersion(version) {
 }
 
 /** @param {unknown} left @param {unknown} right */
-export function compareStableVersions(left, right) {
-  const leftParsed = assertReleaseChannel(left, 'latest')
-  const rightParsed = assertReleaseChannel(right, 'latest')
-  const leftParts = leftParsed.version.split('.').map(part => BigInt(part))
-  const rightParts = rightParsed.version.split('.').map(part => BigInt(part))
+export function compareExactVersions(left, right) {
+  const leftParsed = parseExactVersion(left)
+  const rightParsed = parseExactVersion(right)
+  const leftParts = leftParsed.version.replace(/-.+$/u, '').split('.').map(part => BigInt(part))
+  const rightParts = rightParsed.version.replace(/-.+$/u, '').split('.').map(part => BigInt(part))
   for (let index = 0; index < 3; index += 1) {
     const leftPart = leftParts[index]
     const rightPart = rightParts[index]
-    invariant(leftPart !== undefined && rightPart !== undefined, 'stable version must contain three numeric parts')
+    invariant(leftPart !== undefined && rightPart !== undefined, 'version must contain three numeric parts')
     if (leftPart < rightPart) return -1
     if (leftPart > rightPart) return 1
   }
+
+  if (leftParsed.prerelease === null && rightParsed.prerelease === null) return 0
+  if (leftParsed.prerelease === null) return 1
+  if (rightParsed.prerelease === null) return -1
+
+  const leftIdentifiers = leftParsed.prerelease.split('.')
+  const rightIdentifiers = rightParsed.prerelease.split('.')
+  const sharedLength = Math.min(leftIdentifiers.length, rightIdentifiers.length)
+  for (let index = 0; index < sharedLength; index += 1) {
+    const leftIdentifier = leftIdentifiers[index]
+    const rightIdentifier = rightIdentifiers[index]
+    invariant(leftIdentifier !== undefined && rightIdentifier !== undefined, 'prerelease identifier is missing')
+    if (leftIdentifier === rightIdentifier) continue
+
+    const leftNumeric = /^\d+$/u.test(leftIdentifier)
+    const rightNumeric = /^\d+$/u.test(rightIdentifier)
+    if (leftNumeric && rightNumeric) {
+      return BigInt(leftIdentifier) < BigInt(rightIdentifier) ? -1 : 1
+    }
+    if (leftNumeric) return -1
+    if (rightNumeric) return 1
+    return leftIdentifier < rightIdentifier ? -1 : 1
+  }
+  if (leftIdentifiers.length < rightIdentifiers.length) return -1
+  if (leftIdentifiers.length > rightIdentifiers.length) return 1
   return 0
+}
+
+/** @param {unknown} left @param {unknown} right */
+export function compareStableVersions(left, right) {
+  assertReleaseChannel(left, 'latest')
+  assertReleaseChannel(right, 'latest')
+  return compareExactVersions(left, right)
 }
 
 /** @param {unknown} tag @param {unknown} version */
@@ -200,15 +232,20 @@ export function assertLockfileMatchesManifest(lockfile, manifest) {
 }
 
 /**
- * Validate the official npm latest response after publication. The integrity
- * equality is project policy layered on top of the Desktop Market boundary.
+ * Validate an official npm package response. Stable publication checks keep
+ * the default; promotion planning may opt into observing a prerelease latest.
  *
  * @param {any} manifest
+ * @param {{requireStable?: boolean}} [options]
  */
-export function assertRegistryPackageManifest(manifest) {
+export function assertRegistryPackageManifest(manifest, { requireStable = true } = {}) {
   invariant(isObject(manifest), 'registry manifest must be an object')
   invariant(manifest.name === PACKAGE_NAME, `registry package name must equal ${PACKAGE_NAME}`)
-  assertReleaseChannel(manifest.version, 'latest')
+  if (requireStable) {
+    assertReleaseChannel(manifest.version, 'latest')
+  } else {
+    parseExactVersion(manifest.version)
+  }
   normalizeBundlePatch(manifest.dsh?.bundle?.patch)
   invariant(typeof manifest.dist?.integrity === 'string', 'registry tarball integrity is missing')
   return Object.freeze({ version: manifest.version, integrity: manifest.dist.integrity })

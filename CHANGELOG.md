@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Fixed
+
+- Allow stable npm promotion over the prerelease `latest` that the public registry can create on a package's first `next` publication, while preserving full SemVer downgrade protection and stable post-publish validation.
+- Keep the isolated Loader smoke deterministic when a newer Schemastery version appears within the declared peer range.
+
+### Changed
+
+- Document the npm first-publication dist-tag transition and its non-installable DSH Market status.
+
 ## [0.1.0-rc.3] - 2026-08-29
 
 ### Added

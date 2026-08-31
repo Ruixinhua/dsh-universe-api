@@ -13,11 +13,11 @@ DSH Community Market is source-driven. A user explicitly selects one catalog sou
 | awesome-dsh-plugin | Curated directory entry and Release tarball link | Directory contribution rules and maintainer review |
 | DSH Installable | Confirmed one-click npm installation | One npm identity, stable npm `latest`, and a safe `dsh.bundle.patch` |
 
-The GitHub repository and dshfind entry can therefore exist before npm publication. Until a stable npm version is available, describe the plugin as browseable or manually installable, not as Market-installable.
+The GitHub repository and dshfind entry can therefore exist before npm publication. Until a stable npm version is available, describe the plugin as browseable or manually installable, not as Market-installable. A prerelease selected by npm `latest` does not satisfy the stable-version requirement.
 
 ## Release channels
 
-- `vX.Y.Z-rc.N` is a release candidate. GitHub publishes it as a prerelease. If an accepted RC is published to npm, it must use the `next` dist-tag.
+- `vX.Y.Z-rc.N` is a release candidate. GitHub publishes it as a prerelease. If an accepted RC is published to npm, the publish request must use the `next` dist-tag. On the first publication of a new package, the public npm registry may also create `latest` for that RC despite the requested tag; this transitional state is not stable or Market-installable.
 - `vX.Y.Z` is stable. The tag workflow creates a Draft GitHub Release. The accepted Draft tarball is later published to npm `latest` through the protected promotion workflow.
 - Tags and npm versions are immutable identities. Never move or reuse a release tag after pushing it.
 
@@ -53,7 +53,7 @@ The package must exist before npm Trusted Publisher can be configured. This is t
    npm dist-tag ls dsh-universe-api
    ```
 
-5. Confirm `next` is the accepted RC and that `latest` is absent or does not point to a prerelease.
+5. Confirm `next` is the accepted RC. If npm automatically created `latest` for the same RC because this was the package's first publication, record that transitional state. Do not unpublish the package or repeatedly try to remove the tag when the registry rejects removal; the protected stable promotion will replace it.
 
 If `dsh-universe-api` becomes owned by another publisher before this step, stop. Do not silently rename or scope the package.
 
@@ -99,7 +99,7 @@ After confirming OIDC publishing works, configure npm publishing access to requi
 
 6. Review the preflight evidence, then approve the `npm-production` job.
 
-The workflow resolves the remote tag to one immutable commit, re-downloads all three assets after approval, compares their combined digest with preflight, refuses npm `latest` downgrades, and publishes the accepted tarball without rebuilding it. It verifies npm integrity before making the Draft GitHub Release public. A rerun is allowed only when the existing npm bytes and Market identity are identical.
+The workflow resolves the remote tag to one immutable commit, re-downloads all three assets after approval, compares their combined digest with preflight, and publishes the accepted tarball without rebuilding it. Its monotonic check uses complete SemVer precedence: a stable `X.Y.Z` may replace the same version's automatically created `X.Y.Z-rc.N` `latest`, while any move below a newer prerelease or stable version is rejected. It verifies npm integrity before making the Draft GitHub Release public. A rerun is allowed only when the existing npm bytes and Market identity are identical.
 
 ## Verify Market eligibility
 
@@ -156,6 +156,7 @@ After stable promotion, update the directory entry's `tarball` URL from the RC a
 ## Failure and recovery
 
 - If RC verification fails, fix the issue and publish a new RC number.
+- If the first npm publication under `next` also creates `latest` for that RC and npm refuses to remove it, keep the immutable package in place. It remains ineligible for one-click Market installation until the accepted stable release replaces `latest`.
 - If stable Draft verification fails, leave it unpublished and use a new version after fixing the defect; do not move the tag.
 - If npm succeeds but GitHub finalization fails, rerun the same promotion workflow. It accepts only the identical registry integrity and Release asset set.
 - If a published npm version is defective, publish a higher patch and deprecate the affected version. npm package bytes cannot be replaced.
@@ -167,4 +168,6 @@ After stable promotion, update the directory entry's `tarball` URL from the RC a
 - [DSH catalog provider contract](https://github.com/anywhere-labs/dsh-desktop/blob/v2.0.3/dsh-community-market/docs/catalog-provider-contract.md)
 - [awesome-dsh-plugin contribution rules](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/blob/main/contributing.md)
 - [dshfind submission and synchronization](https://github.com/hikariming/dshfind/blob/main/README.md)
+- [npm dist-tag guidance](https://docs.npmjs.com/adding-dist-tags-to-packages/)
+- [npm CLI record of public-registry first-publication `latest` behavior](https://github.com/npm/cli/issues/6408)
 - [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)

@@ -40,6 +40,7 @@ This record lets a future maintainer verify which release artifact and behaviors
 
 ## Observations
 
+- After Desktop acceptance, the exact accepted tarball was published as `dsh-universe-api@0.1.0-rc.3` with the requested npm `next` tag. Registry bytes and SRI match the GitHub Release asset. Because this was the package's first publication, npm also created `latest=0.1.0-rc.3`; the registry rejected removal of that sole transitional tag. A prerelease `latest` does not meet the DSH Market stable-version requirement.
 - A profile pinned to a local Release tarball cannot be upgraded after that old file has been deleted: pnpm resolves the existing direct dependency before replacing it. Restoring the exact prior Release asset allowed the documented in-place upgrade to complete. This is a pinned-source lifecycle constraint, not an RC.3 runtime failure.
 - pnpm reports host-provided Cordis and DSH Tools peers as absent from the profile's own dependency table. DSH Desktop nevertheless resolved them from its host runtime; full Loader startup, Desktop tool calls, and the ordinary Web profile all passed.
 - GPT-5.4 nano filled omitted optional filters during one exploratory prompt. Acceptance therefore used explicit values for every hard filter and verified the actual tool-call arguments in the UI details panel.
@@ -49,8 +50,8 @@ This record lets a future maintainer verify which release artifact and behaviors
 - `desktop` is healthy with `dsh-universe-api@0.1.0-rc.3` installed.
 - The user patch is back to its default empty list, so results use `bundled-public`.
 - The temporary `web` process is stopped and its test plugin dependency is removed.
-- No npm package or stable Market promotion was performed during Desktop acceptance.
+- No npm package or stable Market promotion was performed during Desktop acceptance. The post-acceptance npm RC bootstrap is recorded separately above.
 
 ## Next gate
 
-Publish this exact accepted tarball once to npm under `next`, verify that `latest` does not point to a prerelease, configure the repository's protected Trusted Publisher, and only then prepare the stable Draft Release.
+Configure the package's protected npm Trusted Publisher, prepare and accept the stable Draft Release, then use the protected workflow to publish `0.1.0` and replace the transitional prerelease `latest`. Market installability remains blocked until that exact stable registry state is verified.

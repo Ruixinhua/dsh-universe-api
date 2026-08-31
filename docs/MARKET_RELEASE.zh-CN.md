@@ -13,11 +13,11 @@ DSH Community Market 由目录源驱动。用户必须明确选择一个目录�
 | awesome-dsh-plugin | 精选目录条目与 Release tarball 链接 | 符合目录贡献规则并通过维护者复核 |
 | DSH Installable | npm 一键安装 | 唯一 npm 身份、稳定版 `latest`、安全的 `dsh.bundle.patch` |
 
-因此，GitHub 仓库和 dshfind 条目可以早于 npm 发布出现。稳定 npm 版本出现前，只能称为“可浏览”或“可手工安装”，不能称为“已支持 Market 一键安装”。
+因此，GitHub 仓库和 dshfind 条目可以早于 npm 发布出现。稳定 npm 版本出现前，只能称为“可浏览”或“可手工安装”，不能称为“已支持 Market 一键安装”。即使 npm `latest` 暂时指向 prerelease，也不满足稳定版门槛。
 
 ## 发布通道
 
-- `vX.Y.Z-rc.N` 是候选版。GitHub 将其发布为 prerelease；如将已验收 RC 发布到 npm，必须使用 `next` dist-tag。
+- `vX.Y.Z-rc.N` 是候选版。GitHub 将其发布为 prerelease；如将已验收 RC 发布到 npm，发布请求必须使用 `next` dist-tag。新包首次发布时，即使指定了该 tag，npm 公共 registry 仍可能同时为 RC 创建 `latest`；这是过渡状态，不代表稳定版或 Market 一键可安装。
 - `vX.Y.Z` 是稳定版。tag 流水线只创建 Draft GitHub Release；验收通过后，受保护的提升工作流才会把同一 tarball 发布到 npm `latest`。
 - tag 与 npm 版本都是不可变身份。tag 推送后不得移动或复用。
 
@@ -53,7 +53,7 @@ npm 包存在后才能配置 Trusted Publisher。这是计划中唯一一次交�
    npm dist-tag ls dsh-universe-api
    ```
 
-5. 确认 `next` 指向已验收 RC，且 `latest` 不存在或绝不指向 prerelease。
+5. 确认 `next` 指向已验收 RC。如果这是新包首次发布，npm 自动把同一个 RC 设为 `latest`，应记录这一过渡状态。若 registry 拒绝删除该 tag，不要 unpublish，也不要反复重试；受保护的稳定版提升会覆盖它。
 
 如果执行到这里时 `dsh-universe-api` 已被其他发布者占用，应立即停止；不能静默改名或切换为 scoped 包。
 
@@ -99,7 +99,7 @@ npm 包存在后才能配置 Trusted Publisher。这是计划中唯一一次交�
 
 6. 检查 preflight 证据，然后批准 `npm-production` job。
 
-工作流会把远端 tag 解析到一个不可变提交；审批后重新下载全部三项资产，并比较它们与 preflight 的组合摘要；拒绝让 npm `latest` 回退；直接发布已验收 tarball，绝不重新打包。只有 npm integrity 验证一致后，Draft GitHub Release 才会公开。重跑时也只接受完全相同的 npm 字节和 Market 身份。
+工作流会把远端 tag 解析到一个不可变提交；审批后重新下载全部三项资产，并比较它们与 preflight 的组合摘要；直接发布已验收 tarball，绝不重新打包。单调性检查使用完整 SemVer 优先级：稳定版 `X.Y.Z` 可以覆盖同版本由 npm 自动创建的 `X.Y.Z-rc.N` `latest`，但低于任何较新 prerelease 或稳定版的移动都会被拒绝。只有 npm integrity 验证一致后，Draft GitHub Release 才会公开。重跑时也只接受完全相同的 npm 字节和 Market 身份。
 
 ## 验证 Market 资格
 
@@ -156,6 +156,7 @@ PR 应只包含这一份 YAML 和脚本生成的两个 README。
 ## 失败与恢复
 
 - RC 验证失败时修复问题并发布新的 RC 编号。
+- 如果首次以 `next` 发布时 npm 同时为该 RC 创建了 `latest`，且 registry 拒绝删除，应保留这个不可变包。稳定版覆盖 `latest` 前，它仍不具备 Market 一键安装资格。
 - 稳定版 Draft 验证失败时保持未发布，修复后使用新版本；不得移动 tag。
 - npm 成功但 GitHub 最终公开失败时，重跑同一个提升工作流；它只接受相同 registry integrity 和 Release 资产集合。
 - 已发布 npm 版本存在缺陷时，发布更高 patch 并 deprecate 受影响版本；npm 包字节不能替换。
@@ -167,4 +168,6 @@ PR 应只包含这一份 YAML 和脚本生成的两个 README。
 - [DSH 目录提供方契约](https://github.com/anywhere-labs/dsh-desktop/blob/v2.0.3/dsh-community-market/docs/catalog-provider-contract.zh.md)
 - [awesome-dsh-plugin 贡献规则](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/blob/main/contributing.md)
 - [dshfind 收录与同步](https://github.com/hikariming/dshfind/blob/main/README.md)
+- [npm dist-tag 指南](https://docs.npmjs.com/adding-dist-tags-to-packages/)
+- [npm CLI 对公共 registry 首次发布 `latest` 行为的记录](https://github.com/npm/cli/issues/6408)
 - [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)

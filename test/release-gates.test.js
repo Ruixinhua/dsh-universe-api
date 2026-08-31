@@ -6,8 +6,10 @@ import {
   assertLockfileMatchesManifest,
   assertProjectManifest,
   assertRegistryManifest,
+  assertRegistryPackageManifest,
   assertReleaseChannel,
   assertTagMatchesVersion,
+  compareExactVersions,
   compareStableVersions,
   normalizeBundlePatch,
   parseExactVersion,
@@ -34,6 +36,13 @@ test('release versions and tags use exact stable or rc.N identities', () => {
   assert.equal(compareStableVersions('0.1.0', '0.1.0'), 0)
   assert.equal(compareStableVersions('0.2.0', '0.1.999'), 1)
   assert.equal(compareStableVersions('0.1.9', '0.2.0'), -1)
+  assert.equal(compareExactVersions('0.1.0', '0.1.0-rc.3'), 1)
+  assert.equal(compareExactVersions('0.1.0-rc.4', '0.1.0-rc.3'), 1)
+  assert.equal(compareExactVersions('0.1.0-rc.10', '0.1.0-rc.9'), 1)
+  assert.equal(compareExactVersions('0.1.0-rc.3', '0.1.0-rc.3'), 0)
+  assert.equal(compareExactVersions('0.1.0', '0.2.0-rc.1'), -1)
+  assert.equal(compareExactVersions('1.0.0-1', '1.0.0-alpha'), -1)
+  assert.equal(compareExactVersions('1.0.0-alpha', '1.0.0-alpha.1'), -1)
   assert.equal(assertTagMatchesVersion('v0.1.0-rc.3', '0.1.0-rc.3').prerelease, 'rc.3')
 
   for (const invalid of ['latest', 'v0.1.0', '0.1', '01.0.0', '0.1.0+build', '0.1.0-rc.03']) {
@@ -98,6 +107,9 @@ test('registry latest validation binds stable npm metadata to the accepted tarba
     expectedVersion: '0.1.0',
     expectedIntegrity: integrity,
   }))
+  const prereleaseManifest = { ...registryManifest, version: '0.1.0-rc.3' }
+  assert.doesNotThrow(() => assertRegistryPackageManifest(prereleaseManifest, { requireStable: false }))
+  assert.throws(() => assertRegistryPackageManifest(prereleaseManifest), /stable/u)
   assert.throws(() => assertRegistryManifest({ ...registryManifest, version: '0.1.0-rc.3' }, {
     expectedVersion: '0.1.0-rc.3',
     expectedIntegrity: integrity,

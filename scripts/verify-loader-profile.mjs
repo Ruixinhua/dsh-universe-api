@@ -95,6 +95,7 @@ try {
     dependencies: {
       [PACKAGE_NAME]: `file:${profileTarballSpec}`,
       '@deepseek-ai/cordis': projectManifest.devDependencies['@deepseek-ai/cordis'],
+      '@deepseek-ai/schemastery': projectManifest.devDependencies['@deepseek-ai/schemastery'],
       '@deepseek-ai/dsh-system-prompt':
         projectManifest.devDependencies['@deepseek-ai/dsh-system-prompt'],
       '@deepseek-ai/dsh-tools': projectManifest.devDependencies['@deepseek-ai/dsh-tools'],
