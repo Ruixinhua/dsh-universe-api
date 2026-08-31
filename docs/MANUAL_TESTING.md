@@ -5,8 +5,9 @@ Use this checklist to accept a release artifact. Record the DSH Desktop version,
 Completed records:
 
 - [`v0.1.0-rc.3` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0-rc.3.md)
+- [`v0.1.0` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0.md)
 
-Current target: the `v0.1.0` Draft Release. Keep it Draft and keep npm `latest` unchanged until every case below passes against the exact Draft tarball.
+The `v0.1.0` record documents the stable Draft gate. Repeat this checklist against the exact Draft tarball for every future release before npm or GitHub publication.
 
 ## Prepare the release artifact
 

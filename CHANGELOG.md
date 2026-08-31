@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- Record the exact `v0.1.0` Draft tarball and completed Desktop acceptance evidence used to authorize protected npm promotion.
+
 ## [0.1.0] - 2026-08-31
 
 ### Fixed
