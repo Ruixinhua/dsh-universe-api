@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file. The format 
 
 - Record the exact `v0.1.2` replacement Draft and completed Desktop acceptance evidence for protected npm promotion.
 
+### Changed
+
+- Record successful OIDC provenance, npm `latest`, byte identity, and public GitHub Release verification for `v0.1.2`.
+- Extend registry verification to tolerate npm publish-time scanning while retaining a bounded fail-closed timeout.
+
 ## [0.1.2] - 2026-08-31
 
 ### Added

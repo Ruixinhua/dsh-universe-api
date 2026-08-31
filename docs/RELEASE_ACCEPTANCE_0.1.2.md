@@ -39,10 +39,16 @@ This record identifies the stable Draft accepted after two earlier immutable Dra
 - `desktop` is healthy with `dsh-universe-api@0.1.2` installed from the accepted Draft tarball.
 - The Desktop user patch is empty and results use `bundled-public`.
 - The Web server is stopped and its test dependency is absent.
-- The `v0.1.2` GitHub Release remains Draft and non-prerelease.
-- npm `next` and `latest` remain `0.1.0-rc.3`; npm `0.1.2` has not been published.
+- The `v0.1.2` GitHub Release is public and non-prerelease with the accepted three asset digests.
+- npm `latest` is `0.1.2`; the registry tarball is byte-identical to the accepted Draft and exposes SLSA provenance.
 - No P0 or P1 issue was found.
+
+## Promotion result
+
+Workflow run [`33374443735`](https://github.com/Ruixinhua/dsh-universe-api/actions/runs/33374443735) published `0.1.2` through OIDC and recorded provenance, then failed closed because npm's publish-time scanning exceeded the original 60-second availability window. npm made the exact version and `latest` visible after approximately five minutes. Idempotent run [`33374923993`](https://github.com/Ruixinhua/dsh-universe-api/actions/runs/33374923993) skipped re-publication, revalidated the accepted integrity, and published the GitHub Release.
+
+The registry attestation binds `pkg:npm/dsh-universe-api@0.1.2` to `refs/tags/v0.1.2`, `.github/workflows/publish-npm.yml`, and the GitHub-hosted runner. The npm tarball SHA-256 remains `45808bf0937a7784bac3872313d37ec2870f94a80d3ccb675392e4b5dce8f066`.
 
 ## Next gate
 
-Run `publish-npm.yml` from `v0.1.2`, approve `npm-production` only after preflight, and publish the explicit local `./dist/...tgz` package spec. Verify the accepted SRI, provenance, and npm `latest` before the workflow makes the GitHub Release public.
+Wait for catalog-provider synchronization, verify the unique npm identity, and complete DSH Desktop Market installation/removal testing. After OIDC has proven healthy, the maintainer may separately tighten npm Publishing access to disallow bypass-2FA tokens.

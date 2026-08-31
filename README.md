@@ -6,7 +6,7 @@
 
 > This is a discovery tool, not an API client. It never calls a candidate API, accepts no API keys, and performs no runtime network requests. Verify pricing, availability, authentication, and terms in the provider's official documentation before making an important choice.
 
-Version `0.1.2` is the current stable package identity. It supersedes the unpublished `0.1.1` Draft after npm interpreted that workflow's unprefixed tarball path as a GitHub repository spec. Promotion remains gated on acceptance of the exact replacement Draft tarball.
+Version `0.1.2` is the current published stable release. Its npm `latest`, SLSA provenance, and public GitHub Release are bound to the same accepted tarball bytes.
 
 ## What it provides
 
@@ -30,14 +30,14 @@ Run all installation commands below in the **DSH Terminal opened from DSH Deskto
 
 | Component | Version | Coverage for `0.1.2` |
 | --- | --- | --- |
-| `dsh-universe-api` | `0.1.2` | Replacement stable identity; publication is gated by artifact acceptance |
+| `dsh-universe-api` | `0.1.2` | Published stable release with completed artifact acceptance |
 | DSH Desktop | `2.0.3` | RC.3 acceptance baseline plus required per-artifact Desktop acceptance |
 | DSH runtime packages | `0.1.1-rc.2` | Native tool registration, execution, and packed profile Loader tests |
 | Cordis | `4.0.1` | Automated tests |
 | Node.js | `22.19.0`, `24.x` | CI; Desktop users use its bundled runtime |
 | Operating systems | Ubuntu, Windows, macOS | Ubuntu full gate; Windows/macOS runtime, Loader, and package smoke |
 
-Every release artifact, including the stable `0.1.2` Draft, requires hands-on verification of the packaged Desktop profile and UI lifecycle. Follow the [manual test checklist](docs/MANUAL_TESTING.md) before npm promotion.
+Every release artifact requires hands-on verification of the packaged Desktop profile and UI lifecycle. The exact `0.1.2` acceptance is recorded in the [manual test checklist](docs/MANUAL_TESTING.md).
 
 ## Install
 
@@ -187,7 +187,7 @@ For a real acceptance test, install the **release tarball**, not the checkout th
 
 ## Market availability
 
-The repository is discoverable through catalog providers such as dshfind. An RC may also exist on npm, but the entry remains browseable or manually installable until npm `latest` is an exact stable version and the catalog exposes one unambiguous npm package identity.
+The repository is discoverable through catalog providers such as dshfind, and npm `latest` is the exact stable `0.1.2`. One-click Market installation still depends on the selected provider synchronizing one unambiguous npm identity; verify provider state before claiming `Installable`.
 
 Maintainers should follow the [Market distribution and release promotion](docs/MARKET_RELEASE.md) guide. It separates GitHub prereleases, the RC bootstrap requested under npm `next` (including npm's first-publication `latest` behavior), protected OIDC stable promotion, dshfind verification, and the curated directory contribution.
 

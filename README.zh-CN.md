@@ -6,7 +6,7 @@
 
 > 这是 API 发现工具，不是 API 客户端。它不会调用候选 API，不接收 API key，运行时也不会发起网络请求。重要选型前，请到供应商官方文档再次核对价格、可用性、认证方式和使用条款。
 
-`0.1.2` 是当前稳定版包身份。未发布的 `0.1.1` Draft 因 npm 把工作流中未加 `./` 前缀的 tarball 路径解析为 GitHub 仓库规范而被替代。只有精确的替代 Draft Release tarball 完成真实验收后，才能提升 npm `latest`。
+`0.1.2` 是当前已发布稳定版。npm `latest`、SLSA provenance 与公开 GitHub Release 均绑定同一份已验收 tarball 字节。
 
 ## 能力
 
@@ -28,7 +28,7 @@
 
 | 组件 | 版本 | 覆盖方式 |
 | --- | --- | --- |
-| `dsh-universe-api` | `0.1.2` | 替代稳定版包身份；公开提升取决于资产验收 |
+| `dsh-universe-api` | `0.1.2` | 已发布稳定版，精确资产验收已完成 |
 | DSH Desktop | `2.0.3` | RC.3 验收基线，加上每个新资产必须执行的 Desktop 验收 |
 | DSH runtime packages | `0.1.1-rc.2` | 原生工具注册、执行管线与 Loader 测试 |
 | Cordis | `4.0.1` | 自动化测试 |
@@ -185,7 +185,7 @@ npm pack --dry-run
 
 ## Market 可用性
 
-目录提供方（例如 dshfind）已经可以发现本仓库。即使 npm 上已有 RC，在 npm `latest` 成为精确稳定版、且目录条目只暴露一个无歧义的 npm 包身份前，条目仍只属于“可浏览”或“可手工安装”，不具备 DSH Community Market 一键安装资格。
+目录提供方（例如 dshfind）已经可以发现本仓库，且 npm `latest` 已是精确稳定版 `0.1.2`。一键安装仍取决于所选目录源同步出唯一、无歧义的 npm 包身份；在提供方状态实测前不能声称 `Installable`。
 
 维护者应遵循[Market 分发与版本提升](docs/MARKET_RELEASE.zh-CN.md)指南。它分别说明 GitHub prerelease、以 npm `next` 发起的 RC 建包（包括 npm 首次发布时的 `latest` 行为）、受保护的 OIDC 稳定版提升、dshfind 验证和精选目录投稿。
 
