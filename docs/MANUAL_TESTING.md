@@ -8,18 +8,18 @@ Completed records:
 - [`v0.1.0` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0.md)
 - [`v0.1.1` replacement DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.1.md)
 
-The `v0.1.0` record documents its accepted but unpublished Draft, while `v0.1.1` records the accepted replacement. Repeat this checklist against the exact Draft tarball for every future release.
+The `v0.1.0` and `v0.1.1` records document accepted but unpublished Drafts. The current replacement target is `v0.1.2`; repeat this checklist against its exact Draft tarball.
 
 ## Prepare the release artifact
 
-1. Download the `.tgz`, `.tgz.sha256`, and catalog update report from the same GitHub Release. For the replacement Draft, use `gh release download v0.1.1 --repo Ruixinhua/dsh-universe-api`.
+1. Download the `.tgz`, `.tgz.sha256`, and catalog update report from the same GitHub Release. For the replacement Draft, use `gh release download v0.1.2 --repo Ruixinhua/dsh-universe-api`.
 2. Verify the checksum before installation.
 3. Open **DSH Terminal** from the DSH Desktop tray menu.
 4. Install the downloaded tarball, not a local source checkout.
 
 ```bash
-sha256sum --check dsh-universe-api-0.1.1.tgz.sha256
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.1.tgz
+sha256sum --check dsh-universe-api-0.1.2.tgz.sha256
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.2.tgz
 dsh --dump-config
 ```
 
@@ -27,8 +27,8 @@ On macOS, use `shasum -a 256 -c` when `sha256sum` is unavailable. On Windows, fi
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$archive = '.\dsh-universe-api-0.1.1.tgz'
-$checksum = '.\dsh-universe-api-0.1.1.tgz.sha256'
+$archive = '.\dsh-universe-api-0.1.2.tgz'
+$checksum = '.\dsh-universe-api-0.1.2.tgz.sha256'
 $archivePath = (Resolve-Path -LiteralPath $archive).Path
 $expected = ((Get-Content -LiteralPath $checksum -Raw).Trim() -split '\s+')[0]
 $actual = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
@@ -114,7 +114,7 @@ After the final failure case, leave the default plugin row with no `catalogPath`
 Install the same tarball into the ordinary `web` profile, inspect its assembled configuration, and start that profile:
 
 ```bash
-dsh plugin --profile web add /absolute/path/to/dsh-universe-api-0.1.1.tgz
+dsh plugin --profile web add /absolute/path/to/dsh-universe-api-0.1.2.tgz
 dsh --profile web --dump-config
 dsh --profile web
 ```
@@ -125,21 +125,21 @@ Pass when the tool loads and behaves the same without any DSH Desktop-only servi
 
 ## Upgrade from a fixed release
 
-For the `0.1.1` acceptance, establish the accepted but unpublished `0.1.0` Draft baseline first:
+For the `0.1.2` acceptance, establish the accepted but unpublished `0.1.1` Draft baseline first:
 
 ```bash
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.0.tgz
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.1.tgz
 dsh --dump-config
 ```
 
 Choose **Quit** from the tray, start Desktop again, and repeat the core search. Pass this baseline stage only when the Plugin list reports `universe-api` as mounted, the tool executes, and catalog source remains `bundled-public`.
 
-Then upgrade without removing the existing bundle. The accepted source for this gate is only the verified `0.1.1` Draft Release tarball:
+Then upgrade without removing the existing bundle. The accepted source for this gate is only the verified `0.1.2` Draft Release tarball:
 
 Download the new `.tgz` and `.sha256`, verify them as described above, and install that exact verified tarball. On Windows, repeat the PowerShell block with the new filenames and use the resulting `$archivePath`. On Linux or macOS run:
 
 ```bash
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.1.tgz
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.2.tgz
 ```
 
 A GitHub tag installation may be tested additionally after the Release is public, but it is a separately fetched checkout and cannot replace acceptance of the Draft tarball bytes.

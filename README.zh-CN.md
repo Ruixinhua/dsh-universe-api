@@ -6,7 +6,7 @@
 
 > 这是 API 发现工具，不是 API 客户端。它不会调用候选 API，不接收 API key，运行时也不会发起网络请求。重要选型前，请到供应商官方文档再次核对价格、可用性、认证方式和使用条款。
 
-`0.1.1` 是当前稳定版包身份。未发布的 `0.1.0` Draft 在提升预检中暴露了 GitHub Draft 可见性权限缺陷，因此由本版本替代。只有精确的替代 Draft Release tarball 完成真实验收后，才能提升 npm `latest`。
+`0.1.2` 是当前稳定版包身份。未发布的 `0.1.1` Draft 因 npm 把工作流中未加 `./` 前缀的 tarball 路径解析为 GitHub 仓库规范而被替代。只有精确的替代 Draft Release tarball 完成真实验收后，才能提升 npm `latest`。
 
 ## 能力
 
@@ -24,11 +24,11 @@
 - DSH 或 DSH Desktop，并能打开 DSH Terminal。
 - 从源码开发需要 Node.js `^22.19.0 || >=24.0.0`。普通 Desktop 用户通常直接使用 Desktop 自带运行时。
 
-兼容性基线如下。每个 Release 资产（包括稳定版 `0.1.1` Draft）都必须按人工清单单独验收，表中的自动化覆盖不能替代 Desktop 人工测试。
+兼容性基线如下。每个 Release 资产（包括稳定版 `0.1.2` Draft）都必须按人工清单单独验收，表中的自动化覆盖不能替代 Desktop 人工测试。
 
 | 组件 | 版本 | 覆盖方式 |
 | --- | --- | --- |
-| `dsh-universe-api` | `0.1.1` | 替代稳定版包身份；公开提升取决于资产验收 |
+| `dsh-universe-api` | `0.1.2` | 替代稳定版包身份；公开提升取决于资产验收 |
 | DSH Desktop | `2.0.3` | RC.3 验收基线，加上每个新资产必须执行的 Desktop 验收 |
 | DSH runtime packages | `0.1.1-rc.2` | 原生工具注册、执行管线与 Loader 测试 |
 | Cordis | `4.0.1` | 自动化测试 |
@@ -52,7 +52,7 @@ dsh plugin add /absolute/path/to/dsh-universe-api
 仅在对应 GitHub Release 已公开后使用稳定 tag。维护者验收 Draft 时必须安装已校验的 Draft tarball。
 
 ```bash
-dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.1
+dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.2
 ```
 
 本包是无需构建的纯 ESM，并且没有 `build` 或 `prepare` 安装钩子，所以从 GitHub 安装不需要配置 pnpm `allowBuilds`。
@@ -62,18 +62,18 @@ dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.1
 从 GitHub Release 下载 `.tgz` 和对应的 `.sha256`，放在同一目录后校验：
 
 ```bash
-sha256sum --check dsh-universe-api-0.1.1.tgz.sha256
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.1.tgz
+sha256sum --check dsh-universe-api-0.1.2.tgz.sha256
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.2.tgz
 ```
 
-macOS 没有 `sha256sum` 时，可执行 `shasum -a 256 -c dsh-universe-api-0.1.1.tgz.sha256`。
+macOS 没有 `sha256sum` 时，可执行 `shasum -a 256 -c dsh-universe-api-0.1.2.tgz.sha256`。
 
 Windows 用户应先切换到两个下载文件所在目录，或把下面的 `$archive` 和 `$checksum` 替换为绝对路径。以下 PowerShell 会先验证归档，再安装刚刚验证的同一文件：
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$archive = '.\dsh-universe-api-0.1.1.tgz'
-$checksum = '.\dsh-universe-api-0.1.1.tgz.sha256'
+$archive = '.\dsh-universe-api-0.1.2.tgz'
+$checksum = '.\dsh-universe-api-0.1.2.tgz.sha256'
 $archivePath = (Resolve-Path -LiteralPath $archive).Path
 $expected = ((Get-Content -LiteralPath $checksum -Raw).Trim() -split '\s+')[0]
 $actual = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash

@@ -6,7 +6,7 @@
 
 > This is a discovery tool, not an API client. It never calls a candidate API, accepts no API keys, and performs no runtime network requests. Verify pricing, availability, authentication, and terms in the provider's official documentation before making an important choice.
 
-Version `0.1.1` is the current stable package identity. It supersedes the unpublished `0.1.0` Draft after that version's promotion preflight exposed a GitHub Draft-visibility permission defect. Promotion remains gated on hands-on acceptance of the exact replacement Draft tarball.
+Version `0.1.2` is the current stable package identity. It supersedes the unpublished `0.1.1` Draft after npm interpreted that workflow's unprefixed tarball path as a GitHub repository spec. Promotion remains gated on acceptance of the exact replacement Draft tarball.
 
 ## What it provides
 
@@ -28,16 +28,16 @@ Run all installation commands below in the **DSH Terminal opened from DSH Deskto
 
 ### Compatibility baseline
 
-| Component | Version | Coverage for `0.1.1` |
+| Component | Version | Coverage for `0.1.2` |
 | --- | --- | --- |
-| `dsh-universe-api` | `0.1.1` | Replacement stable identity; publication is gated by artifact acceptance |
+| `dsh-universe-api` | `0.1.2` | Replacement stable identity; publication is gated by artifact acceptance |
 | DSH Desktop | `2.0.3` | RC.3 acceptance baseline plus required per-artifact Desktop acceptance |
 | DSH runtime packages | `0.1.1-rc.2` | Native tool registration, execution, and packed profile Loader tests |
 | Cordis | `4.0.1` | Automated tests |
 | Node.js | `22.19.0`, `24.x` | CI; Desktop users use its bundled runtime |
 | Operating systems | Ubuntu, Windows, macOS | Ubuntu full gate; Windows/macOS runtime, Loader, and package smoke |
 
-Every release artifact, including the stable `0.1.1` Draft, requires hands-on verification of the packaged Desktop profile and UI lifecycle. Follow the [manual test checklist](docs/MANUAL_TESTING.md) before npm promotion.
+Every release artifact, including the stable `0.1.2` Draft, requires hands-on verification of the packaged Desktop profile and UI lifecycle. Follow the [manual test checklist](docs/MANUAL_TESTING.md) before npm promotion.
 
 ## Install
 
@@ -54,7 +54,7 @@ dsh plugin add /absolute/path/to/dsh-universe-api
 Use the stable tag only after its GitHub Release is public. Maintainers accepting the Draft must install the verified Draft tarball instead.
 
 ```bash
-dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.1
+dsh plugin add github:Ruixinhua/dsh-universe-api#v0.1.2
 ```
 
 The package is pure ESM and has no `build` or `prepare` install hook, so a GitHub installation does not need pnpm `allowBuilds` permission.
@@ -64,18 +64,18 @@ The package is pure ESM and has no `build` or `prepare` install hook, so a GitHu
 Download the `.tgz` and matching `.sha256` assets from the GitHub release, place them in the same directory, and verify the checksum:
 
 ```bash
-sha256sum --check dsh-universe-api-0.1.1.tgz.sha256
-dsh plugin add /absolute/path/to/dsh-universe-api-0.1.1.tgz
+sha256sum --check dsh-universe-api-0.1.2.tgz.sha256
+dsh plugin add /absolute/path/to/dsh-universe-api-0.1.2.tgz
 ```
 
-On macOS, use `shasum -a 256 -c dsh-universe-api-0.1.1.tgz.sha256` if `sha256sum` is unavailable.
+On macOS, use `shasum -a 256 -c dsh-universe-api-0.1.2.tgz.sha256` if `sha256sum` is unavailable.
 
 On Windows, first change to the directory containing both downloaded files, or replace `$archive` and `$checksum` below with absolute paths. Verify the archive and install that exact verified file in PowerShell:
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$archive = '.\dsh-universe-api-0.1.1.tgz'
-$checksum = '.\dsh-universe-api-0.1.1.tgz.sha256'
+$archive = '.\dsh-universe-api-0.1.2.tgz'
+$checksum = '.\dsh-universe-api-0.1.2.tgz.sha256'
 $archivePath = (Resolve-Path -LiteralPath $archive).Path
 $expected = ((Get-Content -LiteralPath $checksum -Raw).Trim() -split '\s+')[0]
 $actual = (Get-FileHash -LiteralPath $archivePath -Algorithm SHA256).Hash
