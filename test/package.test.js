@@ -60,6 +60,7 @@ test('Release assets stay bound to the immutable remote tag commit', async () =>
 
 test('npm promotion jobs can read the accepted Draft Release', async () => {
   const workflow = await readFile(new URL('.github/workflows/publish-npm.yml', ROOT), 'utf8')
+  const registryVerifier = await readFile(new URL('scripts/verify-registry-release.mjs', ROOT), 'utf8')
   const preflight = workflow.match(/\n  preflight:[\s\S]*?(?=\n  publish:)/u)?.[0] ?? ''
   const publish = workflow.match(/\n  publish:[\s\S]*?(?=\n  finalize-release:)/u)?.[0] ?? ''
 
@@ -69,4 +70,13 @@ test('npm promotion jobs can read the accepted Draft Release', async () => {
     publish,
     /npm publish "\.\/dist\/dsh-universe-api-\$VERSION\.tgz"/u,
   )
+  assert.match(publish, /timeout-minutes: 25/u)
+  assert.match(publish, /--attempts 181/u)
+  assert.match(registryVerifier, /attempts <= 181/u)
+})
+
+test('publish dry-run remains usable after the exact version exists', async () => {
+  const verifier = await readFile(new URL('scripts/verify-publish.mjs', ROOT), 'utf8')
+
+  assert.match(verifier, /'--dry-run',\n {2}'--force',/u)
 })

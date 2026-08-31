@@ -101,6 +101,8 @@ After confirming OIDC publishing works, configure npm publishing access to requi
 
 The workflow resolves the remote tag to one immutable commit, re-downloads all three assets after approval, compares their combined digest with preflight, and publishes the accepted tarball without rebuilding it. GitHub exposes Draft listings only to push-level callers, so the preflight and approved publish jobs receive ephemeral job-scoped `contents: write` tokens even though their release operations are read-only; no long-lived token is stored. The npm package argument uses an explicit `./dist/...tgz` path so npm cannot interpret it as a hosted Git repository spec. Its monotonic check uses complete SemVer precedence: a stable `X.Y.Z` may replace the same version's automatically created `X.Y.Z-rc.N` `latest`, while any move below a newer prerelease or stable version is rejected. It verifies npm integrity before making the Draft GitHub Release public. A rerun is allowed only when the existing npm bytes and Market identity are identical.
 
+npm publish-time scanning commonly delays registry availability for about five minutes and may take 15 minutes or longer. Registry verification therefore allows a bounded 15-minute propagation window before failing closed; do not republish an accepted version merely because it is still being processed.
+
 ## Verify Market eligibility
 
 After npm propagation, verify the registry directly:
@@ -170,4 +172,5 @@ After stable promotion, update the directory entry's `tarball` URL from the RC a
 - [dshfind submission and synchronization](https://github.com/hikariming/dshfind/blob/main/README.md)
 - [npm dist-tag guidance](https://docs.npmjs.com/adding-dist-tags-to-packages/)
 - [npm CLI record of public-registry first-publication `latest` behavior](https://github.com/npm/cli/issues/6408)
+- [npm publish-time scanning and availability delay](https://github.blog/changelog/2026-07-28-npm-publish-time-malware-scanning-and-dual-use-metadata/)
 - [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/)

@@ -30,7 +30,7 @@ for (let index = 0; index < args.length; index += 1) {
 }
 assert.ok(selector && expectedVersion && expectedIntegrity, '--selector, --version, and --integrity are required')
 assert.ok(selector === 'latest' || selector === expectedVersion, '--selector must be latest or the expected version')
-assert.ok(Number.isInteger(attempts) && attempts >= 1 && attempts <= 20, '--attempts must be an integer from 1 through 20')
+assert.ok(Number.isInteger(attempts) && attempts >= 1 && attempts <= 181, '--attempts must be an integer from 1 through 181')
 
 const registryUrl = `https://registry.npmjs.org/dsh-universe-api/${encodeURIComponent(selector)}`
 let lastError

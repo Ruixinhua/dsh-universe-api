@@ -88,7 +88,7 @@ jobs:
     name: Publish accepted tarball with npm OIDC
     needs: preflight
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     environment: npm-production
     # Re-reading the accepted Draft after approval also requires push-level access.
     permissions:
@@ -169,7 +169,7 @@ jobs:
         env:
           INTEGRITY: ${{ steps.verify.outputs.integrity }}
           VERSION: ${{ steps.verify.outputs.version }}
-        run: node scripts/verify-registry-release.mjs --selector latest --version "$VERSION" --integrity "$INTEGRITY" --attempts 12
+        run: node scripts/verify-registry-release.mjs --selector latest --version "$VERSION" --integrity "$INTEGRITY" --attempts 181
 
   finalize-release:
     name: Publish the verified GitHub Release

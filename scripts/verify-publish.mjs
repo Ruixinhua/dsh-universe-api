@@ -8,6 +8,7 @@ const channel = releaseChannelForVersion(manifest.version)
 execFileSync('npm', [
   'publish',
   '--dry-run',
+  '--force',
   '--tag',
   channel,
   '--access',
