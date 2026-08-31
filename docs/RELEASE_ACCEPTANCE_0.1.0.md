@@ -56,6 +56,10 @@ This record identifies the exact stable Draft Release artifact accepted before n
 - npm `next` and `latest` remain `0.1.0-rc.3`; npm `0.1.0` has not been published.
 - No P0 or P1 issue was found during stable Desktop acceptance.
 
+## Promotion attempt
+
+Workflow run [`33371168574`](https://github.com/Ruixinhua/dsh-universe-api/actions/runs/33371168574) failed closed before publication because its read-only `GITHUB_TOKEN` could not list a Draft Release. GitHub only returns Draft listings to callers with push-level access. The publish and finalization jobs were skipped; npm and GitHub public state did not change. Because the tag is immutable, `v0.1.0` remains an unpublished Draft and is superseded for publication by `v0.1.1`.
+
 ## Next gate
 
-Run the protected `publish-npm.yml` workflow from `v0.1.0`. Review preflight evidence, approve the `npm-production` environment, verify OIDC publication and provenance, and publish the GitHub Draft only after npm `latest` matches the accepted integrity. Market and catalog-provider verification remains a separate post-publication gate.
+Generate and accept the replacement `v0.1.1` Draft with the corrected ephemeral Draft-read permissions. Then run the protected workflow from that tag, approve `npm-production`, verify OIDC publication and provenance, and publish GitHub only after npm `latest` matches the replacement integrity.

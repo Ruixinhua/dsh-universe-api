@@ -20,8 +20,9 @@ jobs:
     name: Verify accepted Draft Release
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # GitHub exposes Draft Releases only to tokens with push-level access.
     permissions:
-      contents: read
+      contents: write
     outputs:
       asset_set_digest: ${{ steps.download.outputs.asset_set_digest }}
       commit_sha: ${{ steps.identity.outputs.commit_sha }}
@@ -89,8 +90,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: npm-production
+    # Re-reading the accepted Draft after approval also requires push-level access.
     permissions:
-      contents: read
+      contents: write
       id-token: write
     outputs:
       asset_set_digest: ${{ steps.download.outputs.asset_set_digest }}

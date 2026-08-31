@@ -57,3 +57,12 @@ test('Release assets stay bound to the immutable remote tag commit', async () =>
 
   assert.equal(checks.length, 2)
 })
+
+test('npm promotion jobs can read the accepted Draft Release', async () => {
+  const workflow = await readFile(new URL('.github/workflows/publish-npm.yml', ROOT), 'utf8')
+  const preflight = workflow.match(/\n  preflight:[\s\S]*?(?=\n  publish:)/u)?.[0] ?? ''
+  const publish = workflow.match(/\n  publish:[\s\S]*?(?=\n  finalize-release:)/u)?.[0] ?? ''
+
+  assert.match(preflight, /permissions:\n {6}contents: write/u)
+  assert.match(publish, /permissions:\n {6}contents: write\n {6}id-token: write/u)
+})
