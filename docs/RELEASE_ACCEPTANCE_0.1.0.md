@@ -62,4 +62,4 @@ Workflow run [`33371168574`](https://github.com/Ruixinhua/dsh-universe-api/actio
 
 ## Next gate
 
-Generate and accept the replacement `v0.1.1` Draft with the corrected ephemeral Draft-read permissions. Then run the protected workflow from that tag, approve `npm-production`, verify OIDC publication and provenance, and publish GitHub only after npm `latest` matches the replacement integrity.
+The replacement `v0.1.1` Draft is accepted in a separate record with corrected ephemeral Draft visibility. Run the protected workflow from that tag, approve `npm-production`, verify OIDC publication and provenance, and publish GitHub only after npm `latest` matches the replacement integrity.

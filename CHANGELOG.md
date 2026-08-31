@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. The format 
 
 ## [Unreleased]
 
+### Added
+
+- Record the exact replacement `v0.1.1` Draft tarball and completed Desktop acceptance evidence used for protected npm promotion.
+
 ## [0.1.1] - 2026-08-31
 
 ### Added

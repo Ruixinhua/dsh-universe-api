@@ -20,6 +20,7 @@ export const EXPECTED_PACKAGE_FILES = Object.freeze([
   'docs/MARKET_RELEASE.zh-CN.md',
   'docs/PRIVATE_CATALOG.md',
   'docs/RELEASE_ACCEPTANCE_0.1.0.md',
+  'docs/RELEASE_ACCEPTANCE_0.1.1.md',
   'docs/RELEASE_ACCEPTANCE_0.1.0-rc.3.md',
   'index.js',
   'package.json',

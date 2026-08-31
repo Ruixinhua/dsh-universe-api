@@ -6,8 +6,9 @@ Completed records:
 
 - [`v0.1.0-rc.3` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0-rc.3.md)
 - [`v0.1.0` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0.md)
+- [`v0.1.1` replacement DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.1.md)
 
-The `v0.1.0` record documents its accepted but unpublished Draft. The current replacement target is `v0.1.1`; repeat this checklist against that exact Draft tarball before npm or GitHub publication.
+The `v0.1.0` record documents its accepted but unpublished Draft, while `v0.1.1` records the accepted replacement. Repeat this checklist against the exact Draft tarball for every future release.
 
 ## Prepare the release artifact
 
