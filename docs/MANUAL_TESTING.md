@@ -7,8 +7,9 @@ Completed records:
 - [`v0.1.0-rc.3` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0-rc.3.md)
 - [`v0.1.0` DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.0.md)
 - [`v0.1.1` replacement DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.1.md)
+- [`v0.1.2` replacement DSH Desktop acceptance](RELEASE_ACCEPTANCE_0.1.2.md)
 
-The `v0.1.0` and `v0.1.1` records document accepted but unpublished Drafts. The current replacement target is `v0.1.2`; repeat this checklist against its exact Draft tarball.
+The `v0.1.0` and `v0.1.1` records document accepted but unpublished Drafts; `v0.1.2` records the accepted replacement. Repeat this checklist against every future Draft tarball.
 
 ## Prepare the release artifact
 

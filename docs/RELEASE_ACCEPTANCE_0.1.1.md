@@ -56,4 +56,4 @@ Workflow run [`33372999049`](https://github.com/Ruixinhua/dsh-universe-api/actio
 
 ## Next gate
 
-Generate and accept the `v0.1.2` Draft with an explicit `./dist/...tgz` local package spec. Run the protected workflow from that tag, publish only its accepted SRI, verify npm provenance and `latest`, then allow GitHub publication.
+The `v0.1.2` Draft with an explicit `./dist/...tgz` package spec is accepted in a separate record. Run the protected workflow from that tag, publish only its accepted SRI, verify npm provenance and `latest`, then allow GitHub publication.
